@@ -31,7 +31,7 @@ class AwsElement:
         return value == self._defaults[key]
 
 
-    def capture(self, sourceJson):
+    def capture(self):
         raise NotImplementedError("capture is not implemeneted in this class.")
 
 

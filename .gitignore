@@ -1,0 +1,5 @@
+.idea
+venv
+cp.json
+*/__pycache__
+cloudprep/aws/__pycache__/

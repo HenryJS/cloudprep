@@ -14,3 +14,15 @@ class AwsEnvironment:
                 return r
 
         return None
+
+    def addToTodo(self,element):
+        self._todo.append(element)
+
+    def getNextTodo(self):
+        if len(self._todo) > 0:
+            return self._todo[0]
+        else:
+            return None
+
+    def removeFromTodo(self, task):
+        self._todo.remove(task)

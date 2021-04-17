@@ -8,5 +8,5 @@ interrogator = AwsInterrogator.AwsInterrogator()
 renderer = CfnRenderer.CfnRenderer()
 
 
-interrogator.interrogateVpcs(environment)
+interrogator.interrogate(environment)
 renderer.render(environment)
