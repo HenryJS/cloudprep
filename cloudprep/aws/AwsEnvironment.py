@@ -12,8 +12,10 @@ class AwsEnvironment:
         for r in self.resources:
             if r.getPhysicalId() == needle:
                 return r
-
         return None
+
+    def logicalFromPhysical(self, needle):
+        return self.findByPhysicalId(needle).getLogicalId()
 
     def addToTodo(self,element):
         self._todo.append(element)

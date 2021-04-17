@@ -21,7 +21,10 @@ class CfnRenderer:
             r = { "Type": resource.getType(),
                   "Properties": {}}
             for property in resource._element:
-                r["Properties"][property] = resource._element[property]
+                if not resource.isDefault(property):
+                    r["Properties"][property] = resource._element[property]
+            if resource._tags is not None:
+                r["Properties"]["Tags"] = resource._tags.toCfn()
             response[resource.getLogicalId()] = r
 
         return response

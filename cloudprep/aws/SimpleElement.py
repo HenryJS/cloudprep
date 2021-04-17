@@ -1,6 +1,4 @@
-import boto3
-
-from .AwsElement import AwsElement
+from cloudprep.aws.elements.AwsElement import AwsElement
 
 class SimpleElement(AwsElement):
     def __init__(self,environment, phyiscalId):

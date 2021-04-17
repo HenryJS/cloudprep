@@ -1,11 +1,12 @@
 import boto3
-from .AwsVpc import AwsVpc
+from cloudprep.aws.elements.AwsVpc import AwsVpc
+from .AwsEnvironment import AwsEnvironment
 
 class AwsInterrogator:
     def __init__(self):
         pass
 
-    def interrogate(self, environment):
+    def interrogate(self, environment = AwsEnvironment()):
         # start with some VPCs!
         EC2 = boto3.client("ec2")
         VPCs = EC2.describe_vpcs()
@@ -20,6 +21,7 @@ class AwsInterrogator:
             environment.removeFromTodo(element)
             element = environment.getNextTodo()
 
+        return environment
     # def interrogateVpcs(self, environment):
     #     results = []
     #
