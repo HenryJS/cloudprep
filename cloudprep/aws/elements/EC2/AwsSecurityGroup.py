@@ -60,7 +60,7 @@ class AwsSecurityGroup(AwsElement):
                         thisRule[key] = inbound[key]
                 if "Description" in userPair:
                     thisRule["Description"] = userPair["Description"]
-                if "UserId" in userPair:
+                if "UserId" in userPair and userPair["UserId"] != sourceJson["OwnerId"]:
                     thisRule["SourceSecurityGroupOwnerId"] = userPair["UserId"]
                 if "GroupId" in userPair:
                     thisRule["SourceSecurityGroupId"] = {"Ref": AwsElement.CalculateLogicalId("AWS::EC2::SecurityGroup", userPair["GroupId"]) }
