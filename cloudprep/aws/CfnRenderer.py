@@ -17,7 +17,7 @@ class CfnRenderer:
 
     def renderResources(self, resourceSet):
         response = {}
-        for resource in resourceSet:
+        for l, resource in resourceSet.items():
             if not resource.isValid():
                 continue
 

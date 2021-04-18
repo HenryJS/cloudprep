@@ -22,7 +22,7 @@ class AwsInternetGateway(AwsElement):
 
         iga = AwsVpcGatewayAttachment(
             self._environment,
-            self._attached_vpc.getPhysicalId() + self.getPhysicalId(),
+            self._attached_vpc.get_physical_id() + self.get_physical_id(),
             self._attached_vpc
         )
         iga.set_internet_gateway(self)

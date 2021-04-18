@@ -19,7 +19,7 @@ class AwsElement:
     def get_logical_id(self):
         return self._logical_id
 
-    def getPhysicalId(self):
+    def get_physical_id(self):
         return self._physical_id
 
     def getType(self):

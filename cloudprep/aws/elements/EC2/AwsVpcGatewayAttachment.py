@@ -5,7 +5,7 @@ from cloudprep.aws.elements.AwsElement import AwsElement
 
 class AwsVpcGatewayAttachment(AwsElement):
     def __init__(self, environment, physical_id, vpc):
-        super().__init__("AWS::EC2::VpcGatewayAttachment", environment, physical_id)
+        super().__init__("AWS::EC2::VPCGatewayAttachment", environment, physical_id)
         self._vpc = vpc
         self.set_vpn_gateway(None)
         self.set_internet_gateway(None)

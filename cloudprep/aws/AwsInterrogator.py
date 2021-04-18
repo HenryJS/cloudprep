@@ -15,11 +15,11 @@ class AwsInterrogator:
             thisVpc = AwsVpc(environment, VPC["VpcId"])
             environment.addToTodo(thisVpc)
 
-        element = environment.getNextTodo()
+        element = environment.get_next_todo()
         while element is not None:
             element.capture()
-            environment.resources.append(element)
-            environment.removeFromTodo(element)
-            element = environment.getNextTodo()
+            environment.add_resource(element)
+            environment.remove_from_todo(element)
+            element = environment.get_next_todo()
 
         return environment
