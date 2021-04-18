@@ -13,6 +13,8 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::VPC
 * AWS::EC2::Subnet
 * AWS::EC2::PrefixList
+* AWS::EC2::InternetGateway
+* AWS::EC2::VpcGatewayAttachment
   
 ### Partial Support
 * AWS::EC2::SecurityGroup
@@ -23,6 +25,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
   security groups.  It's currently hard to work out the difference between customer-managed and aws-managed rgoups at the 
   point of contact.  I need a backchannel mechanism, which is doable but Complex.
   
+* **VpcGatewayAttachment**: at present, this applies only to InternetGateways.  VpnGateways are "coming soon".
 
 ## Usage
 
@@ -35,7 +38,7 @@ CloudPrep requires permission to query your AWS infrastructure. Specifically:
 * DescribeManagedPrefixLists
 * GetManagedPrefixListEntries
 
-You may find the following IAM policy helpful:
+You may find the following IAM policy helpful.  A CFN script is provided that will create a Role that can be assumed.
 
 ````
 {
@@ -50,7 +53,8 @@ You may find the following IAM policy helpful:
               "ec2:DescribeSubnets",
               "ec2:DescribeSecurityGroups",
               "ec2:DescribeManagedPrefixLists",
-              "ec2:GetManagedPrefixListEntriesDescribeRegions"
+              "ec2:GetManagedPrefixListEntries",
+              "ec2:DescribeInternetGateways"
             ],
             "Resource": "*"
         }

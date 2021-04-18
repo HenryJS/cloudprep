@@ -1,0 +1,76 @@
+{
+  "Description": "An AWS Role that contains the required permissions for CloudPrep",
+  "Resources": {
+    "CloudPrepRole": {
+      "Type" : "AWS::IAM::Role",
+      "Properties" : {
+          "Description" : "An AWS Role that contains the required permissions for CloudPrep",
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {"AWS": "*"},
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          },
+          "Tags" : [
+            {
+              "Key": "CreatedBy",
+              "Value": "CloudPrep Support"
+            }
+          ]
+        }
+    },
+    "CloudPrepManagedPolicy": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "CloudPrepPolicy",
+              "Effect": "Allow",
+              "Action": [
+                "ec2:DescribeVpcs",
+                "ec2:DescribeVpcAttribute",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeManagedPrefixLists",
+                "ec2:GetManagedPrefixListEntries",
+                "ec2:DescribeInternetGateways"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref":  "CloudPrepRole"
+          }
+        ]
+    }
+}
+
+  },
+  "Outputs": {
+    "CloudPrepRoleOutput": {
+      "Description": "The Role that CloudPrep can assume.",
+      "Value": {"Fn::GetAtt": ["CloudPrepRole", "Arn"]},
+      "Export": {
+        "Name": "CloudPrepRole"
+      }
+    },
+    "CloudPrepPolicyOutput": {
+      "Description": "The Policy describing CloudPrep's required permissions.",
+      "Value": {"Ref": "CloudPrepManagedPolicy"},
+      "Export": {
+        "Name": "CloudPrepPolicy"
+      }
+    }
+
+  }
+}
