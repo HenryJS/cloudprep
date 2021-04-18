@@ -12,6 +12,7 @@ class AwsElement:
         self._tags = None
         self._valid = False
         self._physical_id = physicalId
+        self._source_json = None
 
     def getLogicalId(self):
         return self._logical_id
@@ -25,13 +26,16 @@ class AwsElement:
     def getProperties(self):
         return self._element
 
+    def set_source_json(self, json):
+        self._source_json = json
+
     def makeValid(self):
         self._valid = True
 
     def isValid(self):
         return self._valid
 
-    def getTags(self):
+    def get_tags(self):
         if self._tags:
             return self._tags.get_tags()
         else:

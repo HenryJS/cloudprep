@@ -3,6 +3,7 @@ import boto3
 from cloudprep.aws.elements.AwsElement import AwsElement
 from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
+from .AwsInternetGateway import AwsInternetGateway
 from cloudprep.aws.elements.TagSet import TagSet
 
 
@@ -42,6 +43,13 @@ class AwsVpc(AwsElement):
         )["SecurityGroups"]:
             if syg["GroupName"] != "default":
                 self._environment.addToTodo(AwsSecurityGroup(self._environment, syg["GroupId"]))
+
+        for igw in EC2.describe_internet_gateways(
+                Filters=[{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
+        )["InternetGateways"]:
+            aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self)
+            aws_igw.set_source_json(igw)
+            self._environment.addToTodo(aws_igw)
 
         self.makeValid()
 

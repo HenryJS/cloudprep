@@ -31,3 +31,6 @@ class AwsEnvironment:
 
     def removeFromTodo(self, task):
         self._todo.remove(task)
+
+    def add_intermediate_resource(self, resource):
+        self.resources.append(resource)
