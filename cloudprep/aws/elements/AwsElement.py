@@ -1,20 +1,22 @@
 import hashlib
 
+from ..AwsEnvironment import AwsEnvironment
+
 
 class AwsElement:
-    def __init__(self, awsType, environment, physicalId):
+    def __init__(self, aws_type, environment: AwsEnvironment, physical_id):
         self._environment = environment
 
-        self._awsType = awsType
-        self._logical_id = AwsElement.CalculateLogicalId(awsType, physicalId)
+        self._awsType = aws_type
+        self._logical_id = AwsElement.CalculateLogicalId(aws_type, physical_id)
         self._defaults = {}
         self._element = {}
         self._tags = None
         self._valid = False
-        self._physical_id = physicalId
+        self._physical_id = physical_id
         self._source_json = None
 
-    def getLogicalId(self):
+    def get_logical_id(self):
         return self._logical_id
 
     def getPhysicalId(self):

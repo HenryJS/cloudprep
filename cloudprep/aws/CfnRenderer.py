@@ -36,6 +36,6 @@ class CfnRenderer:
                 for (key, value) in tags.items():
                     r["Properties"]["Tags"].append({"Key": key, "Value": value})
 
-            response[resource.getLogicalId()] = r
+            response[resource.get_logical_id()] = r
 
         return response

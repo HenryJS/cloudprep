@@ -11,14 +11,14 @@ class AwsEnvironment:
 
         self._todo = []
 
-    def findByPhysicalId(self, needle):
+    def find_by_physical_id(self, needle):
         for r in self.resources:
             if r.getPhysicalId() == needle:
                 return r
         return None
 
     def logicalFromPhysical(self, needle):
-        return self.findByPhysicalId(needle).getLogicalId()
+        return self.find_by_physical_id(needle).get_logical_id()
 
     def addToTodo(self, element):
         self._todo.append(element)
