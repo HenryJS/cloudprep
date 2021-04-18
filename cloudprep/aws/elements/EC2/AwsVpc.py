@@ -1,9 +1,9 @@
 import boto3
 
-from .AwsElement import AwsElement
+from cloudprep.aws.elements.AwsElement import AwsElement
 from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
-from .TagSet import TagSet
+from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsVpc(AwsElement):
     def __init__(self,environment, phyiscalId):
@@ -21,7 +21,7 @@ class AwsVpc(AwsElement):
 
         self.copyIfExists("CidrBlock", sourceJson)
         self.copyIfExists("InstanceTenancy", sourceJson)
-        self._tags.fromCfn(sourceJson["Tags"])
+        self._tags.fromApiResult(sourceJson["Tags"])
 
         for attrib in ["enableDnsSupport", "enableDnsHostnames"]:
             attribQuery = EC2.describe_vpc_attribute(
@@ -38,3 +38,5 @@ class AwsVpc(AwsElement):
         for syg in EC2.describe_security_groups(Filters=[{ "Name": "vpc-id", "Values": [ self._physical_id ]}])["SecurityGroups"]:
             if syg["GroupName"] != "default":
                 self._environment.addToTodo(AwsSecurityGroup(self._environment,syg["GroupId"]))
+
+        self.makeValid()

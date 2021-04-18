@@ -1,7 +1,7 @@
 import boto3
 
-from .AwsElement import AwsElement
-from .TagSet import TagSet
+from cloudprep.aws.elements.AwsElement import AwsElement
+from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsManagedPrefixList(AwsElement):
     def __init__(self,environment, phyiscalId):
@@ -15,18 +15,26 @@ class AwsManagedPrefixList(AwsElement):
 
     def capture(self):
         EC2 = boto3.client("ec2")
-        raise NotImplementedError("capture is not implemeneted in this class.")
-        self._element = {
-                                "AddressFamily": "IPv4",
-                    "MaxEntries": 1,
-                    "PrefixListName": "BobPrefixList"
-        }
         #
-        # sourceJson = EC2.describe_vpcs(VpcIds=[self._physical_id])["Vpcs"][0]
+        sourceJson = EC2.describe_managed_prefix_lists(PrefixListIds=[self._physical_id])["PrefixLists"][0]
+        if sourceJson["OwnerId"] == "AWS":
+            raise Exception("Prefix list " + self._physical_id + " appears to be AWS-managed.")
+
+        #     "Properties": {
+        #         "Entries": [Entry, ...],
+        #     }
+        # }
         #
-        # self.copyIfExists("CidrBlock", sourceJson)
+        #
+        self.copyIfExists("AddressFamily", sourceJson)
+        self.copyIfExists("MaxEntries", sourceJson)
+        self.copyIfExists("PrefixListName", sourceJson)
+        self.copyIfExists("Entries", EC2.get_managed_prefix_list_entries(PrefixListId=self._physical_id))
+        self._tags.fromApiResult(sourceJson)
+        self.makeValid()
+
         # self.copyIfExists("InstanceTenancy", sourceJson)
-        # self._tags.fromCfn(sourceJson["Tags"])
+        # self._tags.fromApiResult(sourceJson["Tags"])
         #
         # for attrib in ["enableDnsSupport", "enableDnsHostnames"]:
         #     attribQuery = EC2.describe_vpc_attribute(

@@ -1,8 +1,8 @@
 import boto3
 
-from .AwsElement import AwsElement
+from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.SimpleElement import SimpleElement
-from .TagSet import TagSet
+from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsSecurityGroupIngress(AwsElement):
     def __init__(self,environment, phyiscalId):
@@ -35,4 +35,4 @@ class AwsSecurityGroupIngress(AwsElement):
 
         egressGroups = []
 
-        self._tags.fromCfn(sourceJson["Tags"])
+        self._tags.fromApiResult(sourceJson["Tags"])

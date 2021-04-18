@@ -1,8 +1,8 @@
 import boto3, string
 
-from .AwsElement import AwsElement
+from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.SimpleElement import SimpleElement
-from .TagSet import TagSet
+from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsSubnet(AwsElement):
     def __init__(self,environment, phyiscalId):
@@ -30,7 +30,9 @@ class AwsSubnet(AwsElement):
 
         self._element["VpcId"] = { "Ref": (self._environment.logicalFromPhysical(sourceJson["VpcId"])) }
 
-        self._tags.fromCfn(sourceJson["Tags"])
+        self._tags.fromApiResult(sourceJson["Tags"])
+
+        self.makeValid()
 
     def abstractAz(self,azName):
         letter = azName[-1]

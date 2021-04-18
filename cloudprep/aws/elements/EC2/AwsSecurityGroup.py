@@ -1,9 +1,9 @@
 import boto3
 
-from .AwsElement import AwsElement
+from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.SimpleElement import SimpleElement
 from .AwsManagedPrefixList import AwsManagedPrefixList
-from .TagSet import TagSet
+from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsSecurityGroup(AwsElement):
     def __init__(self,environment, phyiscalId):
@@ -22,7 +22,7 @@ class AwsSecurityGroup(AwsElement):
         self._element["GroupName"] = sourceJson["GroupName"]
         self._element["VpcId"] = { "Ref" : self._environment.logicalFromPhysical(sourceJson["VpcId"]) }
         if "Tags" in sourceJson:
-            self._tags.fromCfn(sourceJson["Tags"])
+            self._tags.fromApiResult(sourceJson)
 
 
         ingressRules = []
@@ -75,10 +75,9 @@ class AwsSecurityGroup(AwsElement):
                 if "Description" in prefixList:
                     thisRule["Description"] = prefixList["Description"]
                 if "PrefixListId" in prefixList:
-
                     thisRule["SourcePrefixListId"] = {"Ref": AwsElement.CalculateLogicalId("AWS::EC2::PrefixList", prefixList["PrefixListId"]) }
                     self._environment.addToTodo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
                 ingressRules.append(thisRule)
 
         self._element["SecurityGroupIngress"] = ingressRules
-
+        self.makeValid()

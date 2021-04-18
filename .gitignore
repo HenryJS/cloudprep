@@ -4,3 +4,4 @@ cp.json
 */__pycache__
 cloudprep/aws/__pycache__/
 cloudprep/aws/elements/__pycache__
+*.json

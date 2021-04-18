@@ -9,7 +9,7 @@ class AwsElement:
         self._defaults = {}
         self._element = {}
         self._tags = None
-
+        self._valid = False
         self._physical_id = physicalId
 
     def getLogicalId(self):
@@ -20,6 +20,21 @@ class AwsElement:
 
     def getType(self):
         return self._type
+
+    def getProperties(self):
+        return self._element
+
+    def makeValid(self):
+        self._valid = True
+
+    def isValid(self):
+        return self._valid
+
+    def getTags(self):
+        if self._tags:
+            return self._tags.getTags()
+        else:
+            return None
 
     def setDefaults(self, defaults):
         self._defaults = defaults
@@ -36,7 +51,7 @@ class AwsElement:
             self._element[key] = sourceJson[key]
 
     def capture(self):
-        raise NotImplementedError("capture is not implemeneted in this class.")
+        raise NotImplementedError("capture is not implemented in this class.")
 
 
     def CalculateLogicalId(type, physicalId):
