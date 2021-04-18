@@ -1,12 +1,15 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
 
+
 class SimpleElement(AwsElement):
-    def __init__(self,environment, phyiscalId):
-        super().__init__( "AWS::EC2::SimpleElement", environment)
-        self.setDefaults( { "EnableDnsHostnames": False,
-                             "EnableDnsSupport": True
-                             } )
-        self._physical_id = phyiscalId
+    def __init__(self, environment, physicalId):
+        super().__init__("AWS::EC2::SimpleElement", environment, physicalId)
+        self.setDefaults(
+            {
+                "EnableDnsHostnames": False,
+                "EnableDnsSupport": True
+            }
+        )
 
     def capture(self):
         self._element["PhysicalId"] = self._physical_id

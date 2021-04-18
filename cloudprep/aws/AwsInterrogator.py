@@ -2,11 +2,12 @@ import boto3
 from cloudprep.aws.elements.EC2.AwsVpc import AwsVpc
 from .AwsEnvironment import AwsEnvironment
 
+
 class AwsInterrogator:
     def __init__(self):
         pass
 
-    def interrogate(self, environment = AwsEnvironment()):
+    def interrogate(self, environment=AwsEnvironment()):
         # start with some VPCs!
         EC2 = boto3.client("ec2")
         VPCs = EC2.describe_vpcs()

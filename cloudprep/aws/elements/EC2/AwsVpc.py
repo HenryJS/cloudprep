@@ -5,13 +5,15 @@ from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
 from cloudprep.aws.elements.TagSet import TagSet
 
+
 class AwsVpc(AwsElement):
-    def __init__(self,environment, phyiscalId):
-        super().__init__( "AWS::EC2::VPC", environment, phyiscalId)
-        self.setDefaults( { "EnableDnsHostnames": False,
-                             "EnableDnsSupport": True,
-                            "InstanceTenancy": "default"
-                             } )
+    def __init__(self, environment, phyiscalId):
+        super().__init__("AWS::EC2::VPC", environment, phyiscalId)
+        self.setDefaults({
+            "EnableDnsHostnames": False,
+            "EnableDnsSupport": True,
+            "InstanceTenancy": "default"
+        })
         self._physical_id = phyiscalId
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
@@ -21,7 +23,7 @@ class AwsVpc(AwsElement):
 
         self.copyIfExists("CidrBlock", sourceJson)
         self.copyIfExists("InstanceTenancy", sourceJson)
-        self._tags.fromApiResult(sourceJson["Tags"])
+        self._tags.from_api_result(sourceJson["Tags"])
 
         for attrib in ["enableDnsSupport", "enableDnsHostnames"]:
             attribQuery = EC2.describe_vpc_attribute(
@@ -32,11 +34,14 @@ class AwsVpc(AwsElement):
             if not self.isDefault(attribUC, attribQuery[attribUC]["Value"]):
                 self._element[attribUC] = attribQuery[attribUC]["Value"]
 
-        for net in EC2.describe_subnets(Filters=[{ "Name": "vpc-id", "Values": [ self._physical_id ]}])["Subnets"]:
-            self._environment.addToTodo(AwsSubnet(self._environment,net["SubnetId"]))
+        for net in EC2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}])["Subnets"]:
+            self._environment.addToTodo(AwsSubnet(self._environment, net["SubnetId"]))
 
-        for syg in EC2.describe_security_groups(Filters=[{ "Name": "vpc-id", "Values": [ self._physical_id ]}])["SecurityGroups"]:
+        for syg in EC2.describe_security_groups(
+                Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}]
+        )["SecurityGroups"]:
             if syg["GroupName"] != "default":
-                self._environment.addToTodo(AwsSecurityGroup(self._environment,syg["GroupId"]))
+                self._environment.addToTodo(AwsSecurityGroup(self._environment, syg["GroupId"]))
 
         self.makeValid()
+

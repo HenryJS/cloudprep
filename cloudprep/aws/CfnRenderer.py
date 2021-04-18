@@ -1,5 +1,6 @@
 import json
 
+
 class CfnRenderer:
     def __init__(self):
         pass
@@ -10,10 +11,9 @@ class CfnRenderer:
                 "Description": env.description,
                 "Mappings": env.mappings,
                 "Resources": self.renderResources(env.resources),
-                "Outputs" : env.outputs
+                "Outputs": env.outputs
             }, indent=4
         ))
-
 
     def renderResources(self, resourceSet):
         response = {}
@@ -21,14 +21,16 @@ class CfnRenderer:
             if not resource.isValid():
                 continue
 
-            r = { "Type": resource.getType(),
-                  "Properties": {}}
+            r = {
+                "Type": resource.getType(),
+                "Properties": {}
+            }
 
-            for (property,value) in resource.getProperties().items():
-                if not resource.isDefault(property):
-                    r["Properties"][property] = value
+            for (prop, value) in resource.getProperties().items():
+                if not resource.isDefault(prop):
+                    r["Properties"][prop] = value
 
-            tags = resource.getTags()
+            tags = resource.get_tags()
             if tags is not None:
                 r["Properties"]["Tags"] = []
                 for (key, value) in tags.items():

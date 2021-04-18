@@ -20,7 +20,7 @@ class AwsEnvironment:
     def logicalFromPhysical(self, needle):
         return self.findByPhysicalId(needle).getLogicalId()
 
-    def addToTodo(self,element):
+    def addToTodo(self, element):
         self._todo.append(element)
 
     def getNextTodo(self):
