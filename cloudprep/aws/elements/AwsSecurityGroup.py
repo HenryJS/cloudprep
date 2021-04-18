@@ -2,6 +2,7 @@ import boto3
 
 from .AwsElement import AwsElement
 from cloudprep.aws.SimpleElement import SimpleElement
+from .AwsManagedPrefixList import AwsManagedPrefixList
 from .TagSet import TagSet
 
 class AwsSecurityGroup(AwsElement):
@@ -64,7 +65,19 @@ class AwsSecurityGroup(AwsElement):
                 if "GroupId" in userPair:
                     thisRule["SourceSecurityGroupId"] = {"Ref": AwsElement.CalculateLogicalId("AWS::EC2::SecurityGroup", userPair["GroupId"]) }
 
+                ingressRules.append(thisRule)
 
+            for prefixList in inbound["PrefixListIds"]:
+                thisRule = {}
+                for key in ["IpProtocol", "ToPort", "FromPort"]:
+                    if key in inbound:
+                        thisRule[key] = inbound[key]
+                if "Description" in prefixList:
+                    thisRule["Description"] = prefixList["Description"]
+                if "PrefixListId" in prefixList:
+
+                    thisRule["SourcePrefixListId"] = {"Ref": AwsElement.CalculateLogicalId("AWS::EC2::PrefixList", prefixList["PrefixListId"]) }
+                    self._environment.addToTodo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
                 ingressRules.append(thisRule)
 
         self._element["SecurityGroupIngress"] = ingressRules
