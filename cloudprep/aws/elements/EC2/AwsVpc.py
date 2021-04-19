@@ -1,10 +1,14 @@
+# import sys
+
 import boto3
 
-from cloudprep.aws.elements.AwsElement import AwsElement
+from ..AwsElement import AwsElement
 from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
 from .AwsInternetGateway import AwsInternetGateway
 from .AwsRouteTable import AwsRouteTable
+from .AwsNatGateway import AwsNatGateway
+from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
 from cloudprep.aws.elements.TagSet import TagSet
 
 
@@ -39,14 +43,15 @@ class AwsVpc(AwsElement):
                 self._element[attrib_uc] = attrib_query[attrib_uc]["Value"]
 
         # Create a filter for use in subsequent calls.
-        vpc_id_filter = [{"Name": "vpc-id", "Values": [self._physical_id]}]
+        vpc_filter = [{"Name": "vpc-id", "Values": [self._physical_id]}]
+        att_vpc_filter = [{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
 
-        for net in ec2.describe_subnets(Filters=vpc_id_filter)["Subnets"]:
+        for net in ec2.describe_subnets(Filters=vpc_filter)["Subnets"]:
             subnet = AwsSubnet(self._environment, net["SubnetId"], net)
             self._environment.add_to_todo(subnet)
             self._subnets.append(subnet)
 
-        for syg in ec2.describe_security_groups(Filters=vpc_id_filter)["SecurityGroups"]:
+        for syg in ec2.describe_security_groups(Filters=vpc_filter)["SecurityGroups"]:
             if syg["GroupName"] != "default":
                 self._environment.add_to_todo(
                     AwsSecurityGroup(
@@ -55,15 +60,21 @@ class AwsVpc(AwsElement):
                         syg
                     ))
 
-        for igw in ec2.describe_internet_gateways(
-                Filters=[{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
-        )["InternetGateways"]:
+        for igw in ec2.describe_internet_gateways(Filters=att_vpc_filter)["InternetGateways"]:
             aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self, igw)
             self._environment.add_to_todo(aws_igw)
 
-        for rt in ec2.describe_route_tables(Filters=vpc_id_filter)["RouteTables"]:
+        for gw in ec2.describe_egress_only_internet_gateways(Filters=att_vpc_filter)["EgressOnlyInternetGateways"]:
+            aws_gw = AwsEgressOnlyInternetGateway(self._environment, gw["EgressOnlyInternetGatewayId"], self, gw)
+            self._environment.add_to_todo(aws_gw)
+
+        for rt in ec2.describe_route_tables(Filters=vpc_filter)["RouteTables"]:
             route_table = AwsRouteTable(self._environment, rt["RouteTableId"], rt, self)
             self._environment.add_to_todo(route_table)
+
+        for ngw in ec2.describe_nat_gateways(Filters=vpc_filter)["NatGateways"]:
+            nat_gateway = AwsNatGateway(self._environment, ngw["NatGatewayId"], ngw)
+            self._environment.add_to_todo(nat_gateway)
 
         self.make_valid()
 

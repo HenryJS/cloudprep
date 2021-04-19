@@ -1,4 +1,5 @@
-import hashlib, sys
+import hashlib
+import sys
 from typing import final
 
 from ..AwsEnvironment import AwsEnvironment
@@ -60,6 +61,9 @@ class AwsElement:
 
     def make_reference(self):
         return {"Ref": self.get_logical_id()}
+
+    def make_getatt(self, attribute):
+        return {"Fn::GetAtt": [self.get_logical_id(), attribute]}
 
     @final
     def capture(self):

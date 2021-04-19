@@ -10,7 +10,11 @@
             "Statement": [
               {
                 "Effect": "Allow",
-                "Principal": {"AWS": "*"},
+                "Principal": {
+                  "AWS": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:user/{User}"
+                  }
+                },
                 "Action": [
                   "sts:AssumeRole"
                 ]
@@ -42,7 +46,9 @@
                 "ec2:DescribeManagedPrefixLists",
                 "ec2:GetManagedPrefixListEntries",
                 "ec2:DescribeInternetGateways",
+                "ec2:DescribeEgressOnlyInternetGateways",
                 "ec2:DescribeRouteTables",
+                "ec2:DescribeNatGateways",
                 "cloudformation:DescribeStacks",
                 "cloudformation:GetTemplateSummary",
                 "cloudformation:CreateChangeSet"

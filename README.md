@@ -14,12 +14,19 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::Subnet
 * AWS::EC2::PrefixList
 * AWS::EC2::InternetGateway
-* AWS::EC2::VpcGatewayAttachment
+* AWS::EC2::EgressOnlyInternetGateway
 * AWS::EC2::RouteTable (plus attachments)
+* AWS::EC2::NatGateway
 
 ### Partial Support
+* AWS::EC2::VpcGatewayAttachment
+  * This applies only to InternetGateways.  VpnGateways are "coming soon"
 * AWS::EC2::SecurityGroup
+  * At present, the script will fail if you use AWS-managed prefix lists in your security groups.  It's currently hard
+    to work out the difference between customer-managed and aws-managed groups at the point of contact.
 * AWS::EC2::Route
+  * A subset of targets is supported; see Limitations.
+* AWS::EC2::EIP
 
 ### Notes
 * **RouteTable**: 
@@ -28,50 +35,20 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
     go on to create new subnets in your reproduced environment as you will need to add an explicit association.
   * Route tables without associations will not be captured (I route, therefore I am).  To force capture, assign the tag
     `cloudprep:forceCapture: True`
-
+* **EgressOnlyInternetGateways**: Cloudformation currently does not support tagging, thus all your tags will be lost.
+  Sorry about that.
 ### Limitations
 
-* **Security Groups with AWS owned Prefix Lists**: at present, the script will fail if you use AWS-managed prefix lists
-  in your security groups.  It's currently hard to work out the difference between customer-managed and aws-managed 
-  groups at the point of contact.
-  
-* **VpcGatewayAttachment**: at present, this applies only to InternetGateways.  VpnGateways are "coming soon".
-
-  
-* **Route**: Only a subset of Routes is supported.  These are:
+* **Route**: Only a subset of Route targets is supported.  These are:
   * Internet Gateways
+  * NAT Gateways
+
 
 ## Usage
 
-CloudPrep requires permission to query your AWS infrastructure. Specifically:
-
-* DescribeVpcs
-* DescribeVpcAttribute
-* DescribeSubnets
-* DescribeSecurityGroups
-* DescribeManagedPrefixLists
-* GetManagedPrefixListEntries
-
-You may find the following IAM policy helpful.  A CFN script is provided that will create a Role that can be assumed.
+CloudPrep requires a variety of permissions to query your AWS infrastructure.  A CFN script is provided that will 
+create a Policy that grants these permissions; it also provides a Role which uses this Policy that can be assumed.
 
 ````
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "CloudPrep",
-            "Effect": "Allow",
-            "Action": [ 
-              "ec2:DescribeVpcs",
-              "ec2:DescribeVpcAttribute",
-              "ec2:DescribeSubnets",
-              "ec2:DescribeSecurityGroups",
-              "ec2:DescribeManagedPrefixLists",
-              "ec2:GetManagedPrefixListEntries",
-              "ec2:DescribeInternetGateways"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
+support/install_role.sh <IAM usser>
 ````

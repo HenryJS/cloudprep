@@ -9,7 +9,7 @@ class SimpleElement(AwsElement):
             }
         )
 
-    def capture(self):
+    def local_capture(self):
         self._element["PhysicalId"] = self._physical_id
 
         if self._source_json is None:

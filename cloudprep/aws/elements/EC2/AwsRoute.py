@@ -1,3 +1,5 @@
+import sys
+
 from cloudprep.aws.elements.AwsElement import AwsElement
 
 
@@ -5,6 +7,12 @@ TARGET_ASSOC = {
     "GatewayId": {
         "igw": "AWS::EC2::InternetGateway",
         "loc": None
+    },
+    "NatGatewayId": {
+        "nat": "AWS::EC2::NatGateway"
+    },
+    "EgressOnlyInternetGatewayId": {
+        "eig": "AWS::EC2::EgressOnlyInternetGateway"
     }
 }
 
@@ -23,9 +31,13 @@ class AwsRoute(AwsElement):
         source_json = self._source_json
         self.set_source_json(None)
 
+
         self._element["RouteTableId"] = self._route_table.make_reference()
         self.copy_if_exists("DestinationCidrBlock", source_json)
         self.copy_if_exists("DestinationIpv6CidrBlock", source_json)
+        if source_json["State"] == "blackhole":
+            print("-- Route skipped (blackholing)", file=sys.stderr)
+            return
 
         for target_id_key in [
             "CarrierGatewayId",
@@ -50,9 +62,9 @@ class AwsRoute(AwsElement):
 
                 if target_type is None:
                     return
-                    # target_id_value = source_json[target_id_key]
                 else:
-                    target_id_value = {"Ref": self.calculate_logical_id(target_type, source_json[target_id_key])}
+                    target_id_value = self._environment.find_by_physical_id(source_json[target_id_key]).make_reference()
+                    # target_id_value = {"Ref": self.calculate_logical_id(target_type, source_json[target_id_key])}
 
                 self._element[target_id_key] = target_id_value
 
