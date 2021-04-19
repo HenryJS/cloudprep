@@ -1,3 +1,4 @@
+import sys
 # TODO:
 #  * Ensure that elements can't be processed multiple times.
 
@@ -27,6 +28,7 @@ class AwsEnvironment:
             candidate = self._todo[0]
             # Have we already done so? If so remove and revisit
             if self.find_by_physical_id(candidate.get_physical_id()) is not None:
+                print("Already done", candidate.get_physical_id(), "so skipping.", file=sys.stderr)
                 self.remove_from_todo(candidate)
                 return self.get_next_todo()
 

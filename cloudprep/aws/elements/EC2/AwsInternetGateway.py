@@ -30,4 +30,3 @@ class AwsInternetGateway(AwsElement):
         self._environment.add_to_todo(iga)
 
         self.make_valid()
-
