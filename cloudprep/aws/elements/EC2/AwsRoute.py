@@ -71,11 +71,8 @@ class AwsRoute(AwsElement):
         self.make_valid()
         # TODO:
         #       "CarrierGatewayId" : String,
-        #       "EgressOnlyInternetGatewayId" : String,
-        #       "GatewayId" : String,
         #       "InstanceId" : String,
         #       "LocalGatewayId" : String,
-        #       "NatGatewayId" : String,
         #       "NetworkInterfaceId" : String,
         #       "TransitGatewayId" : String,
         #       "VpcEndpointId" : String,
