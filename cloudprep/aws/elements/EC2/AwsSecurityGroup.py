@@ -12,23 +12,23 @@ class AwsSecurityGroup(AwsElement):
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def capture(self):
-        EC2 = boto3.client("ec2")
-        sourceJson = EC2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
-        self._element["GroupDescription"] = sourceJson["Description"]
-        self._element["GroupName"] = sourceJson["GroupName"]
-        self._element["VpcId"] = {"Ref": self._environment.logicalFromPhysical(sourceJson["VpcId"])}
-        if "Tags" in sourceJson:
-            self._tags.from_api_result(sourceJson)
+        ec2 = boto3.client("ec2")
+        source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
+        self._element["GroupDescription"] = source_json["Description"]
+        self._element["GroupName"] = source_json["GroupName"]
+        self._element["VpcId"] = {"Ref": self._environment.logical_from_physical(source_json["VpcId"])}
+        if "Tags" in source_json:
+            self._tags.from_api_result(source_json)
 
-        ingressRules = IngressRulest(self._environment)
-        ingressRules.process(sourceJson["OwnerId"], sourceJson["IpPermissions"])
-        self._element["SecurityGroupIngress"] = ingressRules.data
+        ingress_rules = IngressRuleset(self._environment)
+        ingress_rules.process(source_json["OwnerId"], source_json["IpPermissions"])
+        self._element["SecurityGroupIngress"] = ingress_rules.data
 
-        egressRules = EgressRulest(self._environment)
-        egressRules.process(sourceJson["OwnerId"], sourceJson["IpPermissionsEgress"])
-        self._element["SecurityGroupEgress"] = egressRules.data
+        egress_rules = EgressRuleset(self._environment)
+        egress_rules.process(source_json["OwnerId"], source_json["IpPermissionsEgress"])
+        self._element["SecurityGroupEgress"] = egress_rules.data
 
-        self.makeValid()
+        self.make_valid()
 
 
 class Ruleset:
@@ -38,72 +38,73 @@ class Ruleset:
         self._groupIdKey = "NoGroupIdKey"
         self._prefixListIdKey = "NoPrefixListIdKey"
 
-    def process(self, ownerId, sourceJson):
-        for rule in sourceJson:
+    def process(self, owner_id, source_json):
+        for rule in source_json:
             # Process IPv4 rules.  These are the same between Egress and Ingress.
             for ipRange in rule["IpRanges"]:
-                thisRule = {}
+                this_rule = {}
                 for key in ["IpProtocol", "ToPort", "FromPort"]:
                     if key in rule:
-                        thisRule[key] = rule[key]
+                        this_rule[key] = rule[key]
                 for key in ["Description", "CidrIp"]:
                     if key in ipRange:
-                        thisRule[key] = ipRange[key]
-                self.data.append(thisRule)
+                        this_rule[key] = ipRange[key]
+                self.data.append(this_rule)
 
             # Process IPv6 rules.  These are the same between Egress and Ingress.
             for ip6Range in rule["Ipv6Ranges"]:
-                thisRule = {}
+                this_rule = {}
                 for key in ["IpProtocol", "ToPort", "FromPort"]:
                     if key in rule:
-                        thisRule[key] = rule[key]
+                        this_rule[key] = rule[key]
                 for key in ["Description", "CidrIpv6"]:
                     if key in ip6Range:
-                        thisRule[key] = ip6Range[key]
-                self.data.append(thisRule)
+                        this_rule[key] = ip6Range[key]
+                self.data.append(this_rule)
 
-            # Process SecurityGroup related rules.  These differ in Security Grouo ID Name are the same between
-            # Egress and Ingress.
+            # Process SecurityGroup related rules.
             for userPair in rule["UserIdGroupPairs"]:
-                thisRule = {}
+                this_rule = {}
                 for key in ["IpProtocol", "ToPort", "FromPort"]:
                     if key in rule:
-                        thisRule[key] = rule[key]
+                        this_rule[key] = rule[key]
                 if "Description" in userPair:
-                    thisRule["Description"] = userPair["Description"]
+                    this_rule["Description"] = userPair["Description"]
 
-                if "UserId" in userPair and userPair["UserId"] != ownerId:
-                    thisRule["SourceSecurityGroupOwnerId"] = userPair["UserId"]
+                # UserID only applies to inbound rules; this condition will be false for outbound rules.
+                if "UserId" in userPair and userPair["UserId"] != owner_id:
+                    this_rule["SourceSecurityGroupOwnerId"] = userPair["UserId"]
 
                 if "GroupId" in userPair:
-                    thisRule[self._groupIdKey] = {
-                        "Ref": AwsElement.CalculateLogicalId("AWS::EC2::SecurityGroup", userPair["GroupId"])}
+                    this_rule[self._groupIdKey] = {
+                        "Ref": AwsElement.calculate_logical_id("AWS::EC2::SecurityGroup", userPair["GroupId"])
+                    }
 
-                self.data.append(thisRule)
+                self.data.append(this_rule)
 
             for prefixList in rule["PrefixListIds"]:
-                thisRule = {}
+                this_rule = {}
                 for key in ["IpProtocol", "ToPort", "FromPort"]:
                     if key in rule:
-                        thisRule[key] = rule[key]
+                        this_rule[key] = rule[key]
                 if "Description" in prefixList:
-                    thisRule["Description"] = prefixList["Description"]
+                    this_rule["Description"] = prefixList["Description"]
                 if "PrefixListId" in prefixList:
-                    thisRule[self._prefixListIdKey] = {
-                        "Ref": AwsElement.CalculateLogicalId("AWS::EC2::PrefixList", prefixList["PrefixListId"])
+                    this_rule[self._prefixListIdKey] = {
+                        "Ref": AwsElement.calculate_logical_id("AWS::EC2::PrefixList", prefixList["PrefixListId"])
                     }
-                    self._environment.addToTodo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
-                self.data.append(thisRule)
+                    self._environment.add_to_todo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
+                self.data.append(this_rule)
 
 
-class IngressRulest(Ruleset):
+class IngressRuleset(Ruleset):
     def __init__(self, environment):
         super().__init__(environment)
         self._groupIdKey = "SourceSecurityGroupId"
         self._prefixListIdKey = "SourcePrefixListId"
 
 
-class EgressRulest(Ruleset):
+class EgressRuleset(Ruleset):
     def __init__(self, environment):
         super().__init__(environment)
         self._groupIdKey = "DestinationSecurityGroupId"

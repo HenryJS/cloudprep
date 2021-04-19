@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
-from cloudprep.aws import AwsInterrogator, CfnRenderer
-
-interrogator = AwsInterrogator.AwsInterrogator()
-renderer = CfnRenderer.CfnRenderer()
+from cloudprep.aws.AwsInterrogator import AwsInterrogator
+from cloudprep.aws.CfnRenderer import CfnRenderer
 
 
-environment = interrogator.interrogate()
-renderer.render(environment)
-
+environment = AwsInterrogator.interrogate()
+renderer = CfnRenderer(environment)
+renderer.render()

@@ -3,7 +3,7 @@
 CloudPrep is a tool for taking an existing cloud environment and translating into CloudFormation.
 
 ###Key design considerations
-* Cloud agnostic by intent.  Currently heavily AWS focussed.
+* Cloud agnostic by intent; however, currently heavily AWS focussed.
 * Idempotent.  Run twice, get the same output.  This means you should be able to use it to create ChangeSets and update
   environments in-situ without considerable data loss.
 
@@ -21,9 +21,9 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 
 ### Limitations
 
-* **Security Groups with AWS owned Prefix Lists**: at present, the script will fail if you use AWS-managed prefix lists in your
-  security groups.  It's currently hard to work out the difference between customer-managed and aws-managed rgoups at the 
-  point of contact.  I need a backchannel mechanism, which is doable but Complex.
+* **Security Groups with AWS owned Prefix Lists**: at present, the script will fail if you use AWS-managed prefix lists
+  in your security groups.  It's currently hard to work out the difference between customer-managed and aws-managed 
+  groups at the point of contact.
   
 * **VpcGatewayAttachment**: at present, this applies only to InternetGateways.  VpnGateways are "coming soon".
 

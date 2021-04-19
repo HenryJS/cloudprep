@@ -7,13 +7,14 @@ class AwsInterrogator:
     def __init__(self):
         pass
 
-    def interrogate(self, environment=AwsEnvironment()):
+    @staticmethod
+    def interrogate(environment=AwsEnvironment()):
         # start with some VPCs!
-        EC2 = boto3.client("ec2")
-        VPCs = EC2.describe_vpcs()
-        for VPC in VPCs["Vpcs"]:
-            thisVpc = AwsVpc(environment, VPC["VpcId"])
-            environment.addToTodo(thisVpc)
+        ec2 = boto3.client("ec2")
+        vpcs = ec2.describe_vpcs()
+        for VPC in vpcs["Vpcs"]:
+            this_vpc = AwsVpc(environment, VPC["VpcId"])
+            environment.add_to_todo(this_vpc)
 
         element = environment.get_next_todo()
         while element is not None:

@@ -2,32 +2,33 @@ import json
 
 
 class CfnRenderer:
-    def __init__(self):
-        pass
+    def __init__(self, environment):
+        self._environment = environment
 
-    def render(self, env):
+    def render(self):
         print(json.dumps(
             {
-                "Description": env.description,
-                "Mappings": env.mappings,
-                "Resources": self.renderResources(env.resources),
-                "Outputs": env.outputs
+                "Description": self._environment.description,
+                "Mappings": self._environment.mappings,
+                "Resources": self.render_resources(self._environment.resources),
+                "Outputs": self._environment.outputs
             }, indent=4
         ))
 
-    def renderResources(self, resourceSet):
+    @staticmethod
+    def render_resources(resource_set):
         response = {}
-        for l, resource in resourceSet.items():
-            if not resource.isValid():
+        for physical_id, resource in resource_set.items():
+            if not resource.is_valid():
                 continue
 
             r = {
-                "Type": resource.getType(),
+                "Type": resource.get_type(),
                 "Properties": {}
             }
 
-            for (prop, value) in resource.getProperties().items():
-                if not resource.isDefault(prop):
+            for (prop, value) in resource.get_properties().items():
+                if not resource.is_default(prop):
                     r["Properties"][prop] = value
 
             tags = resource.get_tags()

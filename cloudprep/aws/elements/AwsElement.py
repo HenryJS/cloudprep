@@ -8,7 +8,7 @@ class AwsElement:
         self._environment = environment
 
         self._awsType = aws_type
-        self._logical_id = AwsElement.CalculateLogicalId(aws_type, physical_id)
+        self._logical_id = self.calculate_logical_id(aws_type, physical_id)
         self._defaults = {}
         self._element = {}
         self._tags = None
@@ -22,19 +22,19 @@ class AwsElement:
     def get_physical_id(self):
         return self._physical_id
 
-    def getType(self):
+    def get_type(self):
         return self._awsType
 
-    def getProperties(self):
+    def get_properties(self):
         return self._element
 
     def set_source_json(self, json):
         self._source_json = json
 
-    def makeValid(self):
+    def make_valid(self):
         self._valid = True
 
-    def isValid(self):
+    def is_valid(self):
         return self._valid
 
     def get_tags(self):
@@ -43,28 +43,31 @@ class AwsElement:
         else:
             return None
 
-    def setDefaults(self, defaults):
+    def set_defaults(self, defaults):
         self._defaults = defaults
 
-    def isDefault(self, key, value=None):
+    def is_default(self, key, value=None):
         if key not in self._defaults:
             return False
         if value is None:
             value = self._element[key]
         return value == self._defaults[key]
 
-    def copyIfExists(self, key, sourceJson):
-        if key in sourceJson:
-            self._element[key] = sourceJson[key]
+    def copy_if_exists(self, key, source_json):
+        if key in source_json:
+            self._element[key] = source_json[key]
 
     def capture(self):
         raise NotImplementedError("capture is not implemented in this class.")
 
+    def make_reference(self):
+        return {"Ref": self.get_logical_id()}
+
     @staticmethod
-    def CalculateLogicalId(awsType, physicalId):
+    def calculate_logical_id(aws_type, physical_id):
         # newPID = str(abs(hash(physicalId)))
-        MD5 = hashlib.md5()
-        MD5.update(physicalId.encode("utf-8"))
-        newPid = MD5.hexdigest()[0:16].upper()
-        return awsType[awsType.rfind(":") + 1:].lower() + str(newPid)
+        md5 = hashlib.md5()
+        md5.update(physical_id.encode("utf-8"))
+        new_pid = md5.hexdigest()[0:16].upper()
+        return aws_type[aws_type.rfind(":") + 1:].lower() + str(new_pid)
         # ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
