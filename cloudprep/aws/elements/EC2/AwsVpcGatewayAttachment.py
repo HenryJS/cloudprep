@@ -14,7 +14,7 @@ class AwsVpcGatewayAttachment(AwsElement):
     def set_vpn_gateway(self, vpn_gateway):
         self._vpn_gateway = vpn_gateway
 
-    def capture(self):
+    def local_capture(self):
         self._element["VpcId"] = self._vpc.make_reference()
 
         if self._internet_gateway is not None:

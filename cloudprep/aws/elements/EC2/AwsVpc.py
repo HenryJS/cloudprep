@@ -20,7 +20,7 @@ class AwsVpc(AwsElement):
         self._main_route_table = None
         self._subnets = []
 
-    def capture(self):
+    def local_capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_vpcs(VpcIds=[self._physical_id])["Vpcs"][0]
 
@@ -70,7 +70,7 @@ class AwsVpc(AwsElement):
     def set_main_route_table(self, main_rtb):
         self._main_route_table = main_rtb
 
-    def finalise(self):
+    def local_finalise(self):
         more_work = False
         # To finalise, scan subnets and add the main table to any that don't already have it.
         for subnet in self._subnets:

@@ -1,4 +1,5 @@
-import hashlib
+import hashlib, sys
+from typing import final
 
 from ..AwsEnvironment import AwsEnvironment
 
@@ -60,17 +61,25 @@ class AwsElement:
     def make_reference(self):
         return {"Ref": self.get_logical_id()}
 
+    @final
     def capture(self):
+        print("Capturing %s %s as %s" % (self._awsType, self._physical_id, self._logical_id), file=sys.stderr)
+        return self.local_capture()
+
+    def local_capture(self):
         raise NotImplementedError("capture is not implemented in this class.")
 
+    @final
     def finalise(self):
+        print("Finalising %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
+        return self.local_finalise()
+
+    def local_finalise(self):
         return False
 
     @staticmethod
     def calculate_logical_id(aws_type, physical_id):
-        # newPID = str(abs(hash(physicalId)))
         md5 = hashlib.md5()
         md5.update(physical_id.encode("utf-8"))
         new_pid = md5.hexdigest()[0:16].upper()
         return aws_type[aws_type.rfind(":") + 1:].lower() + str(new_pid)
-        # ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))

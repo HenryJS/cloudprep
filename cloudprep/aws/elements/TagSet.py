@@ -12,6 +12,12 @@ class TagSet:
     def get_tags(self):
         return self._tags
 
+    def get_tag(self, tag):
+        if tag in self._tags:
+            return self._tags[tag]
+        else:
+            return None
+
     def from_api_result(self, api_result):
         if "Tags" in api_result:
             api_result = api_result["Tags"]

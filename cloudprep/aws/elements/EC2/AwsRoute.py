@@ -14,7 +14,7 @@ class AwsRoute(AwsElement):
         super().__init__("AWS::EC2::Route", environment, physical_id, source_json)
         self._route_table = route_table
 
-    def capture(self):
+    def local_capture(self):
         # ec2 = boto3.client("ec2")
         # self.set_source_json(None)
         # if self._source_json is None:

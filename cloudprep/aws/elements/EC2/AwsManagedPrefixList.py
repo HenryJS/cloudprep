@@ -10,7 +10,7 @@ class AwsManagedPrefixList(AwsElement):
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
-    def capture(self):
+    def local_capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_managed_prefix_lists(PrefixListIds=[self._physical_id])["PrefixLists"][0]
         if source_json["OwnerId"] == "AWS":

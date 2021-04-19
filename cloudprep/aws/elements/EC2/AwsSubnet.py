@@ -14,7 +14,7 @@ class AwsSubnet(AwsElement):
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._route_table = None
 
-    def capture(self):
+    def local_capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
             source_json = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]

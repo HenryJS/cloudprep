@@ -10,7 +10,7 @@ class AwsInternetGateway(AwsElement):
         super().__init__("AWS::EC2::InternetGateway", environment, physical_id, source_json)
         self._attached_vpc = vpc
 
-    def capture(self):
+    def local_capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
             source_json = ec2.describe_internet_gateways(InternetGatewayId=self._physical_id)["InternetGateways"][0]
