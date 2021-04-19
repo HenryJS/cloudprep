@@ -12,8 +12,8 @@ class TagSet:
     def get_tags(self):
         return self._tags
 
-    def from_api_result(self, cfn):
-        if "Tags" in cfn:
-            cfn = cfn["Tags"]
-        for tag in cfn:
+    def from_api_result(self, api_result):
+        if "Tags" in api_result:
+            api_result = api_result["Tags"]
+        for tag in api_result:
             self.add_tag(tag["Key"], tag["Value"])

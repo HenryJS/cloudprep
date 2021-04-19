@@ -31,8 +31,8 @@ class AwsElement:
     def set_source_json(self, json):
         self._source_json = json
 
-    def make_valid(self):
-        self._valid = True
+    def make_valid(self, validity=True):
+        self._valid = validity
 
     def is_valid(self):
         return self._valid
@@ -57,11 +57,14 @@ class AwsElement:
         if key in source_json:
             self._element[key] = source_json[key]
 
+    def make_reference(self):
+        return {"Ref": self.get_logical_id()}
+
     def capture(self):
         raise NotImplementedError("capture is not implemented in this class.")
 
-    def make_reference(self):
-        return {"Ref": self.get_logical_id()}
+    def finalise(self):
+        return False
 
     @staticmethod
     def calculate_logical_id(aws_type, physical_id):

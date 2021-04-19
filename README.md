@@ -15,9 +15,11 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::PrefixList
 * AWS::EC2::InternetGateway
 * AWS::EC2::VpcGatewayAttachment
-  
+* AWS::EC2::RouteTable (plus attachments)
+
 ### Partial Support
 * AWS::EC2::SecurityGroup
+* AWS::EC2::Route
 
 ### Limitations
 
@@ -26,6 +28,12 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
   groups at the point of contact.
   
 * **VpcGatewayAttachment**: at present, this applies only to InternetGateways.  VpnGateways are "coming soon".
+
+* **RouteTable**: One cannot modify the main route table in CloudFormation.  Consequently, your Main route table will be
+  replicated as a bespoke route table and any implicit associations made explicit.
+  
+* **Route**: Only a subset of Routes is supported.  These are:
+  * Internet Gateways
 
 ## Usage
 

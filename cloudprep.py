@@ -3,7 +3,7 @@
 from cloudprep.aws.AwsInterrogator import AwsInterrogator
 from cloudprep.aws.CfnRenderer import CfnRenderer
 
-
-environment = AwsInterrogator.interrogate()
+interrogator = AwsInterrogator()
+environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)
 renderer.render()

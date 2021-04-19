@@ -4,6 +4,7 @@ from cloudprep.aws.elements.AwsElement import AwsElement
 from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
 from .AwsInternetGateway import AwsInternetGateway
+from .AwsRouteTable import AwsRouteTable
 from cloudprep.aws.elements.TagSet import TagSet
 
 
@@ -15,8 +16,9 @@ class AwsVpc(AwsElement):
             "EnableDnsSupport": True,
             "InstanceTenancy": "default"
         })
-        self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._main_route_table = None
+        self._subnets = []
 
     def capture(self):
         ec2 = boto3.client("ec2")
@@ -24,7 +26,8 @@ class AwsVpc(AwsElement):
 
         self.copy_if_exists("CidrBlock", source_json)
         self.copy_if_exists("InstanceTenancy", source_json)
-        self._tags.from_api_result(source_json["Tags"])
+        if "Tags" in source_json:
+            self._tags.from_api_result(source_json["Tags"])
 
         for attrib in ["enableDnsSupport", "enableDnsHostnames"]:
             attrib_query = ec2.describe_vpc_attribute(
@@ -35,12 +38,15 @@ class AwsVpc(AwsElement):
             if not self.is_default(attrib_uc, attrib_query[attrib_uc]["Value"]):
                 self._element[attrib_uc] = attrib_query[attrib_uc]["Value"]
 
-        for net in ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}])["Subnets"]:
-            self._environment.add_to_todo(AwsSubnet(self._environment, net["SubnetId"], net))
+        # Create a filter for use in subsequent calls.
+        vpc_id_filter = [{"Name": "vpc-id", "Values": [self._physical_id]}]
 
-        for syg in ec2.describe_security_groups(
-                Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}]
-        )["SecurityGroups"]:
+        for net in ec2.describe_subnets(Filters=vpc_id_filter)["Subnets"]:
+            subnet = AwsSubnet(self._environment, net["SubnetId"], net)
+            self._environment.add_to_todo(subnet)
+            self._subnets.append(subnet)
+
+        for syg in ec2.describe_security_groups(Filters=vpc_id_filter)["SecurityGroups"]:
             if syg["GroupName"] != "default":
                 self._environment.add_to_todo(
                     AwsSecurityGroup(
@@ -55,5 +61,24 @@ class AwsVpc(AwsElement):
             aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self, igw)
             self._environment.add_to_todo(aws_igw)
 
+        for rt in ec2.describe_route_tables(Filters=vpc_id_filter)["RouteTables"]:
+            route_table = AwsRouteTable(self._environment, rt["RouteTableId"], rt, self)
+            self._environment.add_to_todo(route_table)
+
         self.make_valid()
+
+    def set_main_route_table(self, main_rtb):
+        self._main_route_table = main_rtb
+
+    def finalise(self):
+        more_work = False
+        # To finalise, scan subnets and add the main table to any that don't already have it.
+        for subnet in self._subnets:
+            if not subnet.has_route_table():
+                # print("Found a subnet associated with main route table. Manually associating", file=sys.stderr)
+                subnet.set_route_table(self._main_route_table)
+                self._main_route_table.associate_with_subnet(subnet.get_physical_id())
+                more_work = True
+
+        return more_work
 

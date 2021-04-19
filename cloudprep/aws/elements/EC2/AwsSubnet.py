@@ -11,8 +11,8 @@ class AwsSubnet(AwsElement):
             "AssignIpv6AddressOnCreation": False,
             "MapPublicIpOnLaunch": False
         })
-        self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._route_table = None
 
     def capture(self):
         ec2 = boto3.client("ec2")
@@ -37,6 +37,12 @@ class AwsSubnet(AwsElement):
         self._tags.from_api_result(source_json["Tags"])
 
         self.make_valid()
+
+    def set_route_table(self, route_table):
+        self._route_table = route_table
+
+    def has_route_table(self):
+        return self._route_table is not None
 
     @staticmethod
     def abstract_az(az_name):
