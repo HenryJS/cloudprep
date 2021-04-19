@@ -36,19 +36,23 @@ class AwsVpc(AwsElement):
                 self._element[attrib_uc] = attrib_query[attrib_uc]["Value"]
 
         for net in ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}])["Subnets"]:
-            self._environment.add_to_todo(AwsSubnet(self._environment, net["SubnetId"]))
+            self._environment.add_to_todo(AwsSubnet(self._environment, net["SubnetId"], net))
 
         for syg in ec2.describe_security_groups(
                 Filters=[{"Name": "vpc-id", "Values": [self._physical_id]}]
         )["SecurityGroups"]:
             if syg["GroupName"] != "default":
-                self._environment.add_to_todo(AwsSecurityGroup(self._environment, syg["GroupId"]))
+                self._environment.add_to_todo(
+                    AwsSecurityGroup(
+                        self._environment,
+                        syg["GroupId"],
+                        syg
+                    ))
 
         for igw in ec2.describe_internet_gateways(
                 Filters=[{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
         )["InternetGateways"]:
-            aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self)
-            aws_igw.set_source_json(igw)
+            aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self, igw)
             self._environment.add_to_todo(aws_igw)
 
         self.make_valid()

@@ -5,8 +5,8 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsSubnet(AwsElement):
-    def __init__(self, environment, physical_id):
-        super().__init__("AWS::EC2::Subnet", environment, physical_id)
+    def __init__(self, environment, physical_id, source_json=None):
+        super().__init__("AWS::EC2::Subnet", environment, physical_id, source_json)
         self.set_defaults({
             "AssignIpv6AddressOnCreation": False,
             "MapPublicIpOnLaunch": False
@@ -16,7 +16,11 @@ class AwsSubnet(AwsElement):
 
     def capture(self):
         ec2 = boto3.client("ec2")
-        source_json = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]
+        if self._source_json is None:
+            source_json = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]
+        else:
+            source_json = self._source_json
+            self.set_source_json(None)
 
         self._element["AssignIpv6AddressOnCreation"] = source_json["AssignIpv6AddressOnCreation"]
         self._element["AvailabilityZone"] = self.abstract_az(source_json["AvailabilityZone"])

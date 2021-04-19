@@ -4,7 +4,7 @@ from ..AwsEnvironment import AwsEnvironment
 
 
 class AwsElement:
-    def __init__(self, aws_type, environment: AwsEnvironment, physical_id):
+    def __init__(self, aws_type, environment: AwsEnvironment, physical_id, source_json=None):
         self._environment = environment
 
         self._awsType = aws_type
@@ -14,7 +14,7 @@ class AwsElement:
         self._tags = None
         self._valid = False
         self._physical_id = physical_id
-        self._source_json = None
+        self._source_json = source_json
 
     def get_logical_id(self):
         return self._logical_id

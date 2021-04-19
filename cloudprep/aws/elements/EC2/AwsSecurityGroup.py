@@ -6,14 +6,19 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsSecurityGroup(AwsElement):
-    def __init__(self, environment, physical_id):
-        super().__init__("AWS::EC2::SecurityGroup", environment, physical_id)
+    def __init__(self, environment, physical_id, source_json=None):
+        super().__init__("AWS::EC2::SecurityGroup", environment, physical_id, source_json)
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def capture(self):
         ec2 = boto3.client("ec2")
-        source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
+        if self._source_json is None:
+            source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
+        else:
+            source_json = self._source_json
+            self.set_source_json(None)
+
         self._element["GroupDescription"] = source_json["Description"]
         self._element["GroupName"] = source_json["GroupName"]
         self._element["VpcId"] = {"Ref": self._environment.logical_from_physical(source_json["VpcId"])}
