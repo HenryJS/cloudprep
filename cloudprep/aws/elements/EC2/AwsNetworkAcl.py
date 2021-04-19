@@ -1,5 +1,3 @@
-import sys
-
 from ..AwsElement import AwsElement
 from ..TagSet import TagSet
 
@@ -25,7 +23,7 @@ class AwsNetworkAcl(AwsElement):
 
         n = 0
         for entry in source_json["Entries"]:
-            nacl_entry = AwsNetworkAclEntry(self._environment, self._logical_id + "-entry"+str(n), self, entry )
+            nacl_entry = AwsNetworkAclEntry(self._environment, self._logical_id + "-entry"+str(n), self, entry)
             self._environment.add_to_todo(nacl_entry)
             n = n + 1
 
@@ -42,7 +40,7 @@ class AwsNetworkAcl(AwsElement):
             self._has_associations = True
             n = n + 1
 
-    def finalise(self):
+    def local_finalise(self):
         if self._has_associations:
             self.make_valid()
 
@@ -84,6 +82,7 @@ class AwsSubnetNaclAssociation(AwsElement):
     def local_capture(self):
         self._element["NetworkAclId"] = self._nacl.make_reference()
 
-        self._element["SubnetId"] = self._environment.find_by_physical_id(self._source_json["SubnetId"]).make_reference()
+        self._element["SubnetId"] = \
+            self._environment.find_by_physical_id(self._source_json["SubnetId"]).make_reference()
         self.make_valid()
 

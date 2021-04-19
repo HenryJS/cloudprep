@@ -53,7 +53,6 @@ class AwsRouteTable(AwsElement):
 
     def local_finalise(self):
         # If we have no associations, we might not need to be here =)
-
         if not self._has_associations and str(self._tags.get_tag("cloudprep:forceCapture")).upper() != "TRUE":
             self.make_valid(False)
 

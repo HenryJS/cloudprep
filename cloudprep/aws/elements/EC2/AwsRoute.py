@@ -31,7 +31,6 @@ class AwsRoute(AwsElement):
         source_json = self._source_json
         self.set_source_json(None)
 
-
         self._element["RouteTableId"] = self._route_table.make_reference()
         self.copy_if_exists("DestinationCidrBlock", source_json)
         self.copy_if_exists("DestinationIpv6CidrBlock", source_json)

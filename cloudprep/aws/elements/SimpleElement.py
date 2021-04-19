@@ -1,5 +1,5 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
-from ..TagSet import TagSet
+from .TagSet import TagSet
 
 
 class SimpleElement(AwsElement):
