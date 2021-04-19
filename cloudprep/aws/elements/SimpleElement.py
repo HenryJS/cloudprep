@@ -1,13 +1,12 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
+from ..TagSet import TagSet
 
 
 class SimpleElement(AwsElement):
     def __init__(self, environment, physical_id, source_json=None):
         super().__init__("AWS::EC2::SimpleElement", environment, physical_id, source_json)
-        self.set_defaults(
-            {
-            }
-        )
+        self.set_defaults({})
+        self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def local_capture(self):
         self._element["PhysicalId"] = self._physical_id

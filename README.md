@@ -17,6 +17,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::EgressOnlyInternetGateway
 * AWS::EC2::RouteTable (plus attachments)
 * AWS::EC2::NatGateway
+* AWS::EC2::NetworkAcl (plus entries and associations)
 
 ### Partial Support
 * AWS::EC2::VpcGatewayAttachment
@@ -29,12 +30,13 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::EIP
 
 ### Notes
-* **RouteTable**: 
-  * One cannot modify the main route table in CloudFormation.  Consequently, if your main route table has associations,
-    it will be captured as a bespoke route table and any implicit associations made explicit.  Bear this in mind if you
-    go on to create new subnets in your reproduced environment as you will need to add an explicit association.
-  * Route tables without associations will not be captured (I route, therefore I am).  To force capture, assign the tag
-    `cloudprep:forceCapture: True`
+* **RouteTables and NetworkACLs**: 
+  * One cannot modify the main route table or default NACL in CloudFormation.  Consequently, if either of these have 
+    associations, they will be captured as a custom table/NACL any implicit associations made explicit.  Bear this in 
+    mind if you go on to create new subnets in your reproduced environment manually, as you will need to add an explicit 
+    association.
+  * Route tables / NACLs without associations will not be captured (I route, therefore I am).  To force capture, assign
+    the tag `cloudprep:forceCapture: True`
 * **EgressOnlyInternetGateways**: Cloudformation currently does not support tagging, thus all your tags will be lost.
   Sorry about that.
 ### Limitations

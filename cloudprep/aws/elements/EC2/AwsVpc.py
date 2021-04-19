@@ -9,6 +9,7 @@ from .AwsInternetGateway import AwsInternetGateway
 from .AwsRouteTable import AwsRouteTable
 from .AwsNatGateway import AwsNatGateway
 from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
+from .AwsNetworkAcl import AwsNetworkAcl
 from cloudprep.aws.elements.TagSet import TagSet
 
 
@@ -50,6 +51,10 @@ class AwsVpc(AwsElement):
             subnet = AwsSubnet(self._environment, net["SubnetId"], net)
             self._environment.add_to_todo(subnet)
             self._subnets.append(subnet)
+
+        for nacl in ec2.describe_network_acls(Filters=vpc_filter)["NetworkAcls"]:
+            network_acl = AwsNetworkAcl(self._environment, nacl["NetworkAclId"], self, nacl)
+            self._environment.add_to_todo(network_acl)
 
         for syg in ec2.describe_security_groups(Filters=vpc_filter)["SecurityGroups"]:
             if syg["GroupName"] != "default":
