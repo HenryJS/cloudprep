@@ -1,20 +1,22 @@
+import boto3
+
 from ..AwsElement import AwsElement
 from .AwsEIP import AwsEIP
 from ..TagSet import TagSet
 
 
 class AwsNatGateway(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
+    def __init__(self, environment, physical_id, vpc, source_json=None):
         super().__init__("AWS::EC2::NatGateway", environment, physical_id, source_json)
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def local_capture(self):
-        # if self._source_json is None:
-        #     source_json = None
-        #     pass
-        # else:
-        source_json = self._source_json
-        self.set_source_json(None)
+        ec2 = boto3.client("ec2")
+        if self._source_json is None:
+            source_json = ec2.describe_nat_gateways(NatGatewayIds=[self._physical_id])["NatGateways"][0]
+        else:
+            source_json = self._source_json
+            self.set_source_json(None)
 
         if source_json["State"] not in ["Pending", "Available"]:
             return

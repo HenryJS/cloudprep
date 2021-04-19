@@ -41,6 +41,9 @@ class AwsRouteTable(AwsElement):
 
         self.make_valid()
 
+    def get_vpc(self):
+        return self._vpc
+
     def associate_with_subnet(self, subnet_id):
         assoc = AwsSubnetRouteTableAssociation(
             self._environment,

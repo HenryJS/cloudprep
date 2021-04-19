@@ -65,21 +65,9 @@ class AwsVpc(AwsElement):
                         syg
                     ))
 
-        for igw in ec2.describe_internet_gateways(Filters=att_vpc_filter)["InternetGateways"]:
-            aws_igw = AwsInternetGateway(self._environment, igw["InternetGatewayId"], self, igw)
-            self._environment.add_to_todo(aws_igw)
-
-        for gw in ec2.describe_egress_only_internet_gateways(Filters=att_vpc_filter)["EgressOnlyInternetGateways"]:
-            aws_gw = AwsEgressOnlyInternetGateway(self._environment, gw["EgressOnlyInternetGatewayId"], self, gw)
-            self._environment.add_to_todo(aws_gw)
-
         for rt in ec2.describe_route_tables(Filters=vpc_filter)["RouteTables"]:
             route_table = AwsRouteTable(self._environment, rt["RouteTableId"], rt, self)
             self._environment.add_to_todo(route_table)
-
-        for ngw in ec2.describe_nat_gateways(Filters=vpc_filter)["NatGateways"]:
-            nat_gateway = AwsNatGateway(self._environment, ngw["NatGatewayId"], ngw)
-            self._environment.add_to_todo(nat_gateway)
 
         self.make_valid()
 

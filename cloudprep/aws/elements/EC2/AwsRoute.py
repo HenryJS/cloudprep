@@ -1,18 +1,21 @@
 import sys
 
 from cloudprep.aws.elements.AwsElement import AwsElement
+from .AwsInternetGateway import AwsInternetGateway
+from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
+from .AwsNatGateway import AwsNatGateway
 
 
 TARGET_ASSOC = {
     "GatewayId": {
-        "igw": "AWS::EC2::InternetGateway",
+        "igw": AwsInternetGateway,
         "loc": None
     },
     "NatGatewayId": {
-        "nat": "AWS::EC2::NatGateway"
+        "nat": AwsNatGateway
     },
     "EgressOnlyInternetGatewayId": {
-        "eig": "AWS::EC2::EgressOnlyInternetGateway"
+        "eig": AwsEgressOnlyInternetGateway
     }
 }
 
@@ -57,13 +60,14 @@ class AwsRoute(AwsElement):
                 assoc_prefix = source_json[target_id_key][0:3]
                 if assoc_prefix not in TARGET_ASSOC[target_id_key]:
                     raise NotImplementedError(assoc_prefix + " is not yet a supported " + target_id_key)
-                target_type = TARGET_ASSOC[target_id_key][assoc_prefix]
+                target_class = TARGET_ASSOC[target_id_key][assoc_prefix]
 
-                if target_type is None:
+                if target_class is None:
                     return
                 else:
-                    target_id_value = self._environment.find_by_physical_id(source_json[target_id_key]).make_reference()
-                    # target_id_value = {"Ref": self.calculate_logical_id(target_type, source_json[target_id_key])}
+                    target = target_class(self._environment, source_json[target_id_key], self._route_table.get_vpc() )
+                    self._environment.add_to_todo(target)
+                    target_id_value = target.make_reference()
 
                 self._element[target_id_key] = target_id_value
 

@@ -8,5 +8,4 @@ class AwsEgressOnlyInternetGateway(AwsElement):
 
     def local_capture(self):
         self._element["VpcId"] = self._attached_vpc.make_reference()
-
         self.make_valid()

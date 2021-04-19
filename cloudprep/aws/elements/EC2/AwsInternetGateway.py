@@ -13,7 +13,7 @@ class AwsInternetGateway(AwsElement):
     def local_capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
-            source_json = ec2.describe_internet_gateways(InternetGatewayId=self._physical_id)["InternetGateways"][0]
+            source_json = ec2.describe_internet_gateways(InternetGatewayIds=[self._physical_id])["InternetGateways"][0]
         else:
             source_json = self._source_json
             self.set_source_json(None)
