@@ -1,14 +1,12 @@
 import boto3
 
-from ..AwsElement import AwsElement
+from .RouteTarget import RouteTarget
 from .AwsEIP import AwsEIP
-from ..TagSet import TagSet
 
 
-class AwsNatGateway(AwsElement):
-    def __init__(self, environment, physical_id, vpc, source_json=None):
-        super().__init__("AWS::EC2::NatGateway", environment, physical_id, source_json)
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+class AwsNatGateway(RouteTarget):
+    def __init__(self, environment, physical_id, route_table):
+        super().__init__("AWS::EC2::NatGateway", environment, physical_id, route_table)
 
     def local_capture(self):
         ec2 = boto3.client("ec2")

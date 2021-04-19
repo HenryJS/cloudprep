@@ -1,10 +1,9 @@
-from cloudprep.aws.elements.AwsElement import AwsElement
+from .RouteTarget import RouteTarget
 
 
-class AwsEgressOnlyInternetGateway(AwsElement):
-    def __init__(self, environment, physical_id, vpc, source_json=None):
-        super().__init__("AWS::EC2::EgressOnlyInternetGateway", environment, physical_id, source_json)
-        self._attached_vpc = vpc
+class AwsEgressOnlyInternetGateway(RouteTarget):
+    def __init__(self, environment, physical_id, route_table):
+        super().__init__("AWS::EC2::EgressOnlyInternetGateway", environment, physical_id, route_table)
 
     def local_capture(self):
         self._element["VpcId"] = self._attached_vpc.make_reference()

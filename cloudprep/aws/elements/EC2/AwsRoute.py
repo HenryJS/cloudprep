@@ -2,6 +2,7 @@ import sys
 
 from cloudprep.aws.elements.AwsElement import AwsElement
 from .AwsInternetGateway import AwsInternetGateway
+from .AwsVpcEndpoint import AwsVPCEndpoint
 from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
 from .AwsNatGateway import AwsNatGateway
 
@@ -9,13 +10,14 @@ from .AwsNatGateway import AwsNatGateway
 TARGET_ASSOC = {
     "GatewayId": {
         "igw": AwsInternetGateway,
-        "loc": None
+        "vpce": AwsVPCEndpoint,
+        "local": None
     },
     "NatGatewayId": {
         "nat": AwsNatGateway
     },
     "EgressOnlyInternetGatewayId": {
-        "eig": AwsEgressOnlyInternetGateway
+        "eigw": AwsEgressOnlyInternetGateway
     }
 }
 
@@ -57,15 +59,19 @@ class AwsRoute(AwsElement):
                 if target_id_key not in TARGET_ASSOC:
                     raise NotImplementedError(target_id_key + " is not yet a supported Route Target")
 
-                assoc_prefix = source_json[target_id_key][0:3]
+                assoc_prefix = source_json[target_id_key].split("-")[0]
                 if assoc_prefix not in TARGET_ASSOC[target_id_key]:
-                    raise NotImplementedError(assoc_prefix + " is not yet a supported " + target_id_key)
+                    raise NotImplementedError(target_id_key + "." + assoc_prefix + " is not yet a supported " + target_id_key)
                 target_class = TARGET_ASSOC[target_id_key][assoc_prefix]
 
                 if target_class is None:
                     return
                 else:
-                    target = target_class(self._environment, source_json[target_id_key], self._route_table.get_vpc() )
+                    target = target_class(
+                        self._environment,
+                        source_json[target_id_key],
+                        self._route_table
+                    )
                     self._environment.add_to_todo(target)
                     target_id_value = target.make_reference()
 

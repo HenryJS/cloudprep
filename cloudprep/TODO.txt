@@ -1,3 +1,2 @@
 
-TODO: Private subnets shouldn't allocate public IPs by default
 TODO: NatGateways etc might not be valid - i.e. might be a blackhole.  Routes should take care of this.
