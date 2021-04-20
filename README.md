@@ -39,20 +39,40 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
     add an explicit association.
   * Route tables / NACLs without associations will not be captured (I route, therefore I am).  To force capture, assign
     the tag `cloudprep:forceCapture: True`
-* **EgressOnlyInternetGateways**: Cloudformation currently does not support tagging, thus all your tags will be lost.
-  Sorry about that.
+* **EgressOnlyInternetGateways, VpcEndpoints**: Cloudformation currently does not support tagging, thus all your tags
+  will be lost.  Sorry about that.
+  
+
 ### Limitations
 
 * **Route**: Only a subset of Route targets is supported.  These are:
   * Internet Gateways
   * NAT Gateways
+  * VPC Endpoints
 
 
 ## Usage
 
-CloudPrep requires a variety of permissions to query your AWS infrastructure.  A CFN script is provided that will 
-create a Policy that grants these permissions; it also provides a Role which uses this Policy that can be assumed.
+### Credentials
 
-````
+CloudPrep requires a variety of permissions to query your AWS infrastructure.  A CFN script is provided that will 
+create a Policy that grants these permissions; it also provides a Role which uses this Policy that can be assumed by
+the user specified on the command line.
+
+```commandline
 support/install_role.sh <IAM usser>
-````
+```
+
+You can of course invoke the script using your own credentials / configuration if you wish.
+
+### Invocation
+
+```commandline
+./cloudprep.py > my_json_output
+```
+
+This will take the default profile's credentials and examine the default profile's region for VPCs.  It'll then follow
+the VPC outwards, touching on Subnets, NACLs, RouteTables, Routes and so forth.
+
+* The resulting CloudFormation script it written to stdout.  
+* Logging is written to stderr.
