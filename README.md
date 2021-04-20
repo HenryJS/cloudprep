@@ -31,11 +31,12 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::EIP
 
 ### Notes
-* **RouteTables and NetworkACLs**: 
-  * One cannot modify the main route table or default NACL in CloudFormation.  Consequently, if either of these have 
-    associations, they will be captured as a custom table/NACL any implicit associations made explicit.  Bear this in 
-    mind if you go on to create new subnets in your reproduced environment manually, as you will need to add an explicit 
-    association.
+* **RouteTables, NetworkACLs and SecurityGroups**: 
+  * One cannot modify the main route table, default NACL or default Security Group in CloudFormation.  Consequently, 
+    if the main route table or default NACL if either of these have associations, they will be captured as a custom 
+    table/NACL any implicit associations made explicit.  The default security group wil lbe replicated in all cases. 
+  * Bear this in mind if you go on to create new subnets or ENIs in your reproduced environment as you will need to 
+    add an explicit association.
   * Route tables / NACLs without associations will not be captured (I route, therefore I am).  To force capture, assign
     the tag `cloudprep:forceCapture: True`
 * **EgressOnlyInternetGateways**: Cloudformation currently does not support tagging, thus all your tags will be lost.
