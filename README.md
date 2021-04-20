@@ -18,6 +18,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::RouteTable (plus attachments)
 * AWS::EC2::NatGateway
 * AWS::EC2::NetworkAcl (plus entries and associations)
+* AWS::EC2::VPCEndpoint
 
 ### Partial Support
 * AWS::EC2::VpcGatewayAttachment

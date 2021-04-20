@@ -16,32 +16,32 @@ class AwsVPCEndpoint(RouteTarget):
             "PrivateDnsEnabled": False,
             "VpcEndpointType": "Gateway"
         })
-        # {
-        #     "Type": "AWS::EC2::VPCEndpoint",
-        #     "Properties": {
-        #         "RouteTableIds": [String, ...],
-        #         "SecurityGroupIds": [String, ...],
-        #     }
-        # }
 
-        # TODO: Not do this if the policy is default.
-        self.copy_if_exists("PolicyDocument", source_json)
         self.copy_if_exists("PrivateDnsEnabled", source_json)
         self.copy_if_exists("VpcEndpointType", source_json)
 
-        # TODO: Translate this between regions
         my_region = boto3.session.Session().region_name
         self._element["ServiceName"] = {
             "Fn::Sub": source_json["ServiceName"].replace(my_region, "${AWS::Region}")
         }
 
-        # for key in ["SubnetIds", "RouteTableIds"]:
-        #     if len(source_json[key]) > 0:
-        #         self._element[key] = source_json[key]
+        if "SubnetIds" in source_json:
+            self._map_with_references("AWS::EC2::Subnet", source_json["SubnetIds"], "SubnetIds")
 
-        if len(source_json["Groups"]) > 0:
-            self._element["SecurityGroupIds"] = source_json["Groups"]
+        if "RouteTableIds" in source_json:
+            self._map_with_references("AWS::EC2::RouteTable", source_json["RouteTableIds"], "RouteTableIds")
+
+        if "Groups" in source_json:
+            self._map_with_references("AWS::EC2::SecurityGroup", [ x["GroupId"] for x in source_json["Groups"]], "SecurityGroupIds")
 
         self._element["VpcId"] = self._route_table.get_vpc().make_reference()
-
         self.make_valid()
+
+    def _map_with_references(self, aws_type, source_array, local_key):
+        if len(source_array) == 0:
+            return
+
+        self._element[local_key] = []
+        for entry in source_array:
+            print("")
+            self._element[local_key].append({"Ref": self.calculate_logical_id(aws_type, entry)})

@@ -86,3 +86,7 @@ class AwsRoute(AwsElement):
         #       "TransitGatewayId" : String,
         #       "VpcEndpointId" : String,
         #       "VpcPeeringConnectionId" : String
+
+    def local_finalise(self):
+        if "DestinationCidrBlock" not in self._element and "DestinationIpv6CidrBlock" not in self._element:
+            self.make_valid(False)

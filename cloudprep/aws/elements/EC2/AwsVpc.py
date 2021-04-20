@@ -1,16 +1,14 @@
-# import sys
+import sys
 
 import boto3
 
 from ..AwsElement import AwsElement
+from ..TagSet import TagSet
 from .AwsSubnet import AwsSubnet
 from .AwsSecurityGroup import AwsSecurityGroup
-from .AwsInternetGateway import AwsInternetGateway
 from .AwsRouteTable import AwsRouteTable
-from .AwsNatGateway import AwsNatGateway
-from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
 from .AwsNetworkAcl import AwsNetworkAcl
-from cloudprep.aws.elements.TagSet import TagSet
+from .AwsVpcEndpoint import AwsVPCEndpoint
 
 
 class AwsVpc(AwsElement):
@@ -47,17 +45,19 @@ class AwsVpc(AwsElement):
         vpc_filter = [{"Name": "vpc-id", "Values": [self._physical_id]}]
         att_vpc_filter = [{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
 
-        for net in ec2.describe_subnets(Filters=vpc_filter)["Subnets"]:
-            subnet = AwsSubnet(self._environment, net["SubnetId"], net)
-            self._environment.add_to_todo(subnet)
-            self._subnets.append(subnet)
+        for results_page in ec2.get_paginator("describe_subnets").paginate(Filters=vpc_filter):
+            for net in results_page["Subnets"]:
+                subnet = AwsSubnet(self._environment, net["SubnetId"], net)
+                self._environment.add_to_todo(subnet)
+                self._subnets.append(subnet)
 
-        for nacl in ec2.describe_network_acls(Filters=vpc_filter)["NetworkAcls"]:
-            network_acl = AwsNetworkAcl(self._environment, nacl["NetworkAclId"], self, nacl)
-            self._environment.add_to_todo(network_acl)
+        for results_page in ec2.get_paginator("describe_network_acls").paginate(Filters=vpc_filter):
+            for nacl in results_page["NetworkAcls"]:
+                network_acl = AwsNetworkAcl(self._environment, nacl["NetworkAclId"], self, nacl)
+                self._environment.add_to_todo(network_acl)
 
-        for syg in ec2.describe_security_groups(Filters=vpc_filter)["SecurityGroups"]:
-            if syg["GroupName"] != "default":
+        for results_page in ec2.get_paginator("describe_security_groups").paginate(Filters=vpc_filter):
+            for syg in results_page["SecurityGroups"]:
                 self._environment.add_to_todo(
                     AwsSecurityGroup(
                         self._environment,
@@ -69,10 +69,21 @@ class AwsVpc(AwsElement):
             route_table = AwsRouteTable(self._environment, rt["RouteTableId"], rt, self)
             self._environment.add_to_todo(route_table)
 
+        vpce_filter = vpc_filter
+        vpce_filter.append({"Name": "vpc-endpoint-type", "Values": ["Interface"]})
+        for results_page in ec2.get_paginator("describe_vpc_endpoints").paginate(Filters=vpce_filter):
+            for vpce in results_page["VpcEndpoints"]:
+                vpc_endpoint = AwsVPCEndpoint(self._environment, vpce["VpcEndpointId"], self )
+                self._environment.add_to_todo(vpc_endpoint)
+
         self.make_valid()
 
     def set_main_route_table(self, main_rtb):
         self._main_route_table = main_rtb
+
+    def get_vpc(self):
+        """ This is an nasty hack """
+        return self
 
     def local_finalise(self):
         more_work = False

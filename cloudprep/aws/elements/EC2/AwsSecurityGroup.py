@@ -20,8 +20,13 @@ class AwsSecurityGroup(AwsElement):
             self.set_source_json(None)
 
         self._element["GroupDescription"] = source_json["Description"]
-        self._element["GroupName"] = source_json["GroupName"]
-        self._element["VpcId"] = {"Ref": self._environment.logical_from_physical(source_json["VpcId"])}
+        self._element["VpcId"] = self._environment.find_by_physical_id(source_json["VpcId"]).make_reference()
+
+        if source_json["GroupName"] == "default":
+            self._element["GroupName"] = "was-default"
+        else:
+            self._element["GroupName"] = source_json["GroupName"]
+
         if "Tags" in source_json:
             self._tags.from_api_result(source_json)
 
