@@ -2,6 +2,7 @@ import boto3
 
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
+from cloudprep.aws.VpcAttachmentRegistry import VpcAttachmentRegistry
 from .AwsRoute import AwsRoute
 
 
@@ -61,6 +62,18 @@ class AwsRouteTable(AwsElement):
 
             for route in self._routes:
                 route.make_valid(False)
+
+            return
+
+        # Find those that depend on a TGW and add the explicit dependency
+        vpc_id = self.get_vpc().get_logical_id()
+        for route in self._routes:
+            if "TransitGatewayId" in route._element:
+                tga = VpcAttachmentRegistry.get_attachment(
+                    vpc_logical_id=vpc_id,
+                    subject_logical_id=route._element["TransitGatewayId"]["Ref"]
+                )
+                route.add_dependency(tga.get_logical_id())
 
 
 class AwsSubnetRouteTableAssociation(AwsElement):

@@ -1,9 +1,8 @@
 import boto3
 
-from cloudprep.aws.elements.AwsElement import AwsElement
 from .RouteTarget import RouteTarget
 from cloudprep.aws.elements.TagSet import TagSet
-
+from ...VpcAttachmentRegistry import VpcAttachmentRegistry
 from .AwsTransitGatewayVpcAttachment import AwsTransitGatewayVpcAttachment
 
 
@@ -41,13 +40,13 @@ class AwsTransitGateway(RouteTarget):
 
         attachments = ec2.describe_transit_gateway_vpc_attachments()["TransitGatewayVpcAttachments"]
         for attachment in attachments:
-            element = AwsTransitGatewayVpcAttachment(
+            tgva = AwsTransitGatewayVpcAttachment(
                 self._environment,
                 attachment["TransitGatewayAttachmentId"],
                 attachment
             )
-            self._environment.add_to_todo(element)
-            self._route.add_dependency(element.get_logical_id())
-            self._route.add_dependency(self.get_logical_id())
+            self._environment.add_to_todo(tgva)
+
+            VpcAttachmentRegistry.register_attachment(self._route.get_route_table().get_vpc(), self, tgva)
 
         self.make_valid()

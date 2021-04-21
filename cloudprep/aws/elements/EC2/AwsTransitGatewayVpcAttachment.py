@@ -3,13 +3,13 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsTransitGatewayVpcAttachment(AwsElement):
+
     def __init__(self, environment, physical_id, source_json=None):
         super().__init__("AWS::EC2::TransitGatewayAttachment", environment, physical_id, source_json)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def local_capture(self):
-
         if self._source_json is None:
             source_json = None
             pass
@@ -25,3 +25,4 @@ class AwsTransitGatewayVpcAttachment(AwsElement):
         self.array_refer_if_exists("SubnetIds", source_json)
 
         self.make_valid()
+

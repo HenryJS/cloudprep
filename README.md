@@ -33,7 +33,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::TransitGateway
   * Routes pointing at a TransitGateway will cause the script to capture that TGW and its attachments to the VPC;
     however,the script currenly stopes there. RouteTables, DX connections etc are not captured.  Peering will likely
-    always require a manual step.
+    always require a manual step.  
 
 ### Notes
 * **RouteTables, NetworkACLs and SecurityGroups**: 
