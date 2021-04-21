@@ -5,7 +5,7 @@ from .AwsNatGateway import AwsNatGateway
 from .AwsTransitGateway import AwsTransitGateway
 
 
-class RouteTargetBuilder():
+class RouteTargetBuilder:
 
     TARGET_ASSOC = {
             "igw": AwsInternetGateway,

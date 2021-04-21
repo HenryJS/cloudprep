@@ -17,7 +17,7 @@ class VpcAttachmentRegistry:
         if vpc_logical_id not in VpcAttachmentRegistry.__registry:
             return None
 
-        if  subject_logical_id not in VpcAttachmentRegistry.__registry[vpc_logical_id]:
+        if subject_logical_id not in VpcAttachmentRegistry.__registry[vpc_logical_id]:
             return None
 
         return VpcAttachmentRegistry.__registry[vpc_logical_id][subject_logical_id]

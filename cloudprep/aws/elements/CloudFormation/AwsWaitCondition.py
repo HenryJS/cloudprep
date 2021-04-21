@@ -1,7 +1,6 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
-from cloudprep.aws.elements.TagSet import TagSet
-
 from .AwsWaitConditionHandle import AwsWaitConditionHandle
+
 
 class AwsWaitCondition(AwsElement):
     def __init__(self, environment, physical_id, timeout):

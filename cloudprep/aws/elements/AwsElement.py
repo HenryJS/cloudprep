@@ -1,4 +1,3 @@
-import hashlib
 import sys
 from typing import final
 
@@ -95,7 +94,7 @@ class AwsElement:
 
     @final
     def capture(self):
-        print("Capturing %s %s as %s" % (self._awsType, self._physical_id, self._logical_id), file=sys.stderr)
+        print("Capturing %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
         return self.local_capture()
 
     def local_capture(self):
@@ -111,7 +110,7 @@ class AwsElement:
 
     @staticmethod
     def calculate_logical_id(physical_id):
-        return physical_id.replace("-","")
+        return physical_id.replace("-", "")
         # md5 = hashlib.md5()
         # md5.update(physical_id.encode("utf-8"))
         # new_pid = md5.hexdigest()[0:16].upper()

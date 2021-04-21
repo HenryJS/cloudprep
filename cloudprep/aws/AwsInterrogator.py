@@ -1,4 +1,3 @@
-import sys
 import boto3
 from cloudprep.aws.elements.EC2.AwsVpc import AwsVpc
 from .AwsEnvironment import AwsEnvironment
@@ -21,9 +20,6 @@ class AwsInterrogator:
         while more_work:
             self.capture_elements()
             more_work = self.finalise_elements()
-            if more_work:
-                print("After finalising, we have more work to do! ", file=sys.stderr)
-                print([x.get_logical_id() for x in self._environment._todo], file=sys.stderr)
 
         return self._environment
 

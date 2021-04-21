@@ -6,11 +6,12 @@ from .RouteTarget import RouteTarget
 class AwsVPCEndpoint(RouteTarget):
     def __init__(self, environment, physical_id, route):
         super().__init__("AWS::EC2::VPCEndpoint", environment, physical_id, route)
-        self._tags = None;
+        self._tags = None
 
     def local_capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_vpc_endpoints(VpcEndpointIds=[self._physical_id])["VpcEndpoints"][0]
+        # noinspection PyPep8
         self.set_defaults({
             "PolicyDocument": "{\"Version\":\"2008-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"*\",\"Resource\":\"*\"}]}",
             "PrivateDnsEnabled": False,
@@ -32,7 +33,7 @@ class AwsVPCEndpoint(RouteTarget):
             self._map_with_references(source_json["RouteTableIds"], "RouteTableIds")
 
         if "Groups" in source_json:
-            self._map_with_references([ x["GroupId"] for x in source_json["Groups"]], "SecurityGroupIds")
+            self._map_with_references([x["GroupId"] for x in source_json["Groups"]], "SecurityGroupIds")
 
         self.refer_if_exists("VpcId", source_json)
         self.make_valid()

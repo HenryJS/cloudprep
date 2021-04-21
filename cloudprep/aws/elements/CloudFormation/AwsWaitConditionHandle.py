@@ -1,5 +1,4 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
-from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsWaitConditionHandle(AwsElement):

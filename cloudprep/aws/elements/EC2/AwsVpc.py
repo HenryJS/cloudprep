@@ -1,5 +1,3 @@
-import sys
-
 import boto3
 
 from ..AwsElement import AwsElement
@@ -43,7 +41,7 @@ class AwsVpc(AwsElement):
 
         # Create a filter for use in subsequent calls.
         vpc_filter = [{"Name": "vpc-id", "Values": [self._physical_id]}]
-        att_vpc_filter = [{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
+        # att_vpc_filter = [{"Name": "attachment.vpc-id", "Values": [self._physical_id]}]
 
         for results_page in ec2.get_paginator("describe_subnets").paginate(Filters=vpc_filter):
             for net in results_page["Subnets"]:
@@ -73,7 +71,7 @@ class AwsVpc(AwsElement):
         vpce_filter.append({"Name": "vpc-endpoint-type", "Values": ["Interface"]})
         for results_page in ec2.get_paginator("describe_vpc_endpoints").paginate(Filters=vpce_filter):
             for vpce in results_page["VpcEndpoints"]:
-                vpc_endpoint = AwsVPCEndpoint(self._environment, vpce["VpcEndpointId"], self )
+                vpc_endpoint = AwsVPCEndpoint(self._environment, vpce["VpcEndpointId"], self)
                 self._environment.add_to_todo(vpc_endpoint)
 
         self.make_valid()

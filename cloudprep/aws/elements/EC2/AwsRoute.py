@@ -68,3 +68,4 @@ class AwsRoute(AwsElement):
     def local_finalise(self):
         if "DestinationCidrBlock" not in self._element and "DestinationIpv6CidrBlock" not in self._element:
             self.make_valid(False)
+

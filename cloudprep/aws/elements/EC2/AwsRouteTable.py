@@ -68,10 +68,10 @@ class AwsRouteTable(AwsElement):
         # Find those that depend on a TGW and add the explicit dependency
         vpc_id = self.get_vpc().get_logical_id()
         for route in self._routes:
-            if "TransitGatewayId" in route._element:
+            if "TransitGatewayId" in route.get_properties():
                 tga = VpcAttachmentRegistry.get_attachment(
                     vpc_logical_id=vpc_id,
-                    subject_logical_id=route._element["TransitGatewayId"]["Ref"]
+                    subject_logical_id=route.get_properties()["TransitGatewayId"]["Ref"]
                 )
                 route.add_dependency(tga.get_logical_id())
 
