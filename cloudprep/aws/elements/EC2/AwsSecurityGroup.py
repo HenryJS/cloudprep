@@ -87,7 +87,7 @@ class Ruleset:
 
                 if "GroupId" in userPair:
                     this_rule[self._groupIdKey] = {
-                        "Ref": AwsElement.calculate_logical_id("AWS::EC2::SecurityGroup", userPair["GroupId"])
+                        "Ref": AwsElement.calculate_logical_id(userPair["GroupId"])
                     }
 
                 self.data.append(this_rule)
@@ -101,7 +101,7 @@ class Ruleset:
                     this_rule["Description"] = prefixList["Description"]
                 if "PrefixListId" in prefixList:
                     this_rule[self._prefixListIdKey] = {
-                        "Ref": AwsElement.calculate_logical_id("AWS::EC2::PrefixList", prefixList["PrefixListId"])
+                        "Ref": AwsElement.calculate_logical_id(prefixList["PrefixListId"])
                     }
                     self._environment.add_to_todo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
                 self.data.append(this_rule)

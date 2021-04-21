@@ -27,6 +27,11 @@ class CfnRenderer:
                 "Properties": {}
             }
 
+            if len(resource.get_dependencies()) > 0:
+                r["DependsOn"] = []
+                for dep in resource.get_dependencies():
+                    r["DependsOn"].append(dep)
+
             for (prop, value) in resource.get_properties().items():
                 if not resource.is_default(prop):
                     r["Properties"][prop] = value

@@ -2,14 +2,13 @@ from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
 
 
-class SimpleElement(AwsElement):
+class AwsTransitGatewayVpcAttachment(AwsElement):
     def __init__(self, environment, physical_id, source_json=None):
-        super().__init__("AWS::EC2::SimpleElement", environment, physical_id, source_json)
+        super().__init__("AWS::EC2::TransitGatewayAttachment", environment, physical_id, source_json)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     def local_capture(self):
-        self._element["PhysicalId"] = self._physical_id
 
         if self._source_json is None:
             source_json = None
@@ -18,4 +17,11 @@ class SimpleElement(AwsElement):
             source_json = self._source_json
             self.set_source_json(None)
 
-        return source_json
+        if source_json["State"] not in ["available", "pending"]:
+            return
+
+        self.refer_if_exists("VpcId", source_json)
+        self.refer_if_exists("TransitGatewayId", source_json)
+        self.array_refer_if_exists("SubnetIds", source_json)
+
+        self.make_valid()

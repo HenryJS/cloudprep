@@ -5,8 +5,8 @@ from .AwsEIP import AwsEIP
 
 
 class AwsNatGateway(RouteTarget):
-    def __init__(self, environment, physical_id, route_table):
-        super().__init__("AWS::EC2::NatGateway", environment, physical_id, route_table)
+    def __init__(self, environment, physical_id, route):
+        super().__init__("AWS::EC2::NatGateway", environment, physical_id, route)
 
     def local_capture(self):
         ec2 = boto3.client("ec2")

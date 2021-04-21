@@ -6,8 +6,8 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsInternetGateway(RouteTarget):
-    def __init__(self, environment, physical_id, route_table):
-        super().__init__("AWS::EC2::InternetGateway", environment, physical_id, route_table)
+    def __init__(self, environment, physical_id, route):
+        super().__init__("AWS::EC2::InternetGateway", environment, physical_id, route)
 
     def local_capture(self):
         ec2 = boto3.client("ec2")
@@ -22,8 +22,8 @@ class AwsInternetGateway(RouteTarget):
 
         iga = AwsVpcGatewayAttachment(
             self._environment,
-            self._route_table.get_vpc().get_physical_id() + self.get_physical_id(),
-            self._route_table.get_vpc()
+            self._route.get_route_table().get_vpc().get_physical_id() + self.get_physical_id(),
+            self._route.get_route_table().get_vpc()
         )
         iga.set_internet_gateway(self)
         self._environment.add_to_todo(iga)
