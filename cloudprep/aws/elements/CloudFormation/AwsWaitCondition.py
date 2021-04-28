@@ -8,7 +8,8 @@ class AwsWaitCondition(AwsElement):
         self._timeout = timeout
         self.set_defaults({})
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         wait_handle = AwsWaitConditionHandle(self._environment, self.physical_id + "-handle")
         self._environment.add_to_todo(wait_handle)
 

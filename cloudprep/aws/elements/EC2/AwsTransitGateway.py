@@ -20,7 +20,8 @@ class AwsTransitGateway(RouteTarget):
         })
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
-    def local_capture(self):
+    @RouteTarget.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_transit_gateways(TransitGatewayIds=[self._physical_id])["TransitGateways"][0]
 

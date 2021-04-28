@@ -8,7 +8,8 @@ class AwsVPCEndpoint(RouteTarget):
         super().__init__("AWS::EC2::VPCEndpoint", environment, physical_id, route)
         self._tags = None
 
-    def local_capture(self):
+    @RouteTarget.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_vpc_endpoints(VpcEndpointIds=[self._physical_id])["VpcEndpoints"][0]
         # noinspection PyPep8

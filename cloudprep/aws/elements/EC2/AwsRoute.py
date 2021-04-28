@@ -10,7 +10,8 @@ class AwsRoute(AwsElement):
         super().__init__("AWS::EC2::Route", environment, physical_id, source_json)
         self._route_table = route_table
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         # ec2 = boto3.client("ec2")
         # self._source_json = None
         # if self._source_json is None:
@@ -65,7 +66,8 @@ class AwsRoute(AwsElement):
     def get_route_table(self):
         return self._route_table
 
-    def local_finalise(self):
+    @AwsElement.finalise_method
+    def finalise(self):
         if "DestinationCidrBlock" not in self._element and "DestinationIpv6CidrBlock" not in self._element:
             self.make_valid(False)
 

@@ -11,7 +11,8 @@ class AwsSecurityGroup(AwsElement):
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
             source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]

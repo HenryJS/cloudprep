@@ -104,21 +104,6 @@ class AwsElement:
     def make_getatt(self, attribute):
         return {"Fn::GetAtt": [self.logical_id, attribute]}
 
-    @final
-    def capture(self):
-        print("Capturing %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
-        return self.local_capture()
-
-    def local_capture(self):
-        raise NotImplementedError("capture is not implemented in this class.")
-
-    @final
-    def finalise(self):
-        print("Finalising %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
-        return self.local_finalise()
-
-    def local_finalise(self):
-        return False
 
     @staticmethod
     def calculate_logical_id(physical_id):
@@ -127,3 +112,23 @@ class AwsElement:
         # md5.update(physical_id.encode("utf-8"))
         # new_pid = md5.hexdigest()[0:16].upper()
         # return aws_type[aws_type.rfind(":") + 1:].lower() + str(new_pid)
+
+    def capture_method(f):
+        def transformed_method(self):
+            print("Capturing %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
+            return f(self)
+        return transformed_method
+
+    @capture_method
+    def capture(self):
+        raise NotImplementedError("capture is not implemented in this class.")
+
+    def finalise_method(f):
+        def transformed_method(self):
+            print("Finalising %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
+            return f(self)
+        return transformed_method
+
+    @finalise_method
+    def finalise(self):
+        return False

@@ -10,7 +10,8 @@ class AwsNetworkAcl(AwsElement):
         self._vpc = vpc
         self._has_associations = False
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         if self._source_json is None:
             source_json = None
             pass
@@ -40,7 +41,8 @@ class AwsNetworkAcl(AwsElement):
             self._has_associations = True
             n = n + 1
 
-    def local_finalise(self):
+    @AwsElement.finalise_method
+    def finalise(self):
         if self._has_associations:
             self.make_valid()
 
@@ -51,7 +53,8 @@ class AwsNetworkAclEntry(AwsElement):
         self.set_defaults({})
         self._nacl = nacl
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         source_json = self._source_json
         self._source_json = None
 
@@ -79,7 +82,8 @@ class AwsSubnetNaclAssociation(AwsElement):
         super().__init__("AWS::EC2::SubnetNetworkAclAssociation", environment, physical_id, assoc)
         self._nacl = nacl
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         self._element["NetworkAclId"] = self._nacl.make_reference()
 
         self._element["SubnetId"] = \

@@ -10,7 +10,8 @@ class AwsInternetGateway(RouteTarget):
     def __init__(self, environment, physical_id, route):
         super().__init__("AWS::EC2::InternetGateway", environment, physical_id, route)
 
-    def local_capture(self):
+    @RouteTarget.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
             source_json = ec2.describe_internet_gateways(InternetGatewayIds=[self._physical_id])["InternetGateways"][0]

@@ -8,7 +8,8 @@ class AwsNatGateway(RouteTarget):
     def __init__(self, environment, physical_id, route):
         super().__init__("AWS::EC2::NatGateway", environment, physical_id, route)
 
-    def local_capture(self):
+    @RouteTarget.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         if self._source_json is None:
             source_json = ec2.describe_nat_gateways(NatGatewayIds=[self._physical_id])["NatGateways"][0]

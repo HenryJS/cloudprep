@@ -21,7 +21,8 @@ class AwsVpc(AwsElement):
         self._main_route_table = None
         self._subnets = []
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         source_json = ec2.describe_vpcs(VpcIds=[self._physical_id])["Vpcs"][0]
 
@@ -83,7 +84,8 @@ class AwsVpc(AwsElement):
         """ This is an nasty hack """
         return self
 
-    def local_finalise(self):
+    @AwsElement.finalise_method
+    def finalise(self):
         more_work = False
         # To finalise, scan subnets and add the main table to any that don't already have it.
         for subnet in self._subnets:

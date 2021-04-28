@@ -10,7 +10,8 @@ class AwsEIP(AwsElement):
             "Domain": "vpc"
         })
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         # if self._source_json is None:
         #     source_json = None
         #     pass

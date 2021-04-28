@@ -8,7 +8,8 @@ class SimpleElement(AwsElement):
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         self._element["PhysicalId"] = self._physical_id
 
         if self._source_json is None:

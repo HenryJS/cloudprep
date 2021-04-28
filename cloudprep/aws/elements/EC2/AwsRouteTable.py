@@ -14,7 +14,8 @@ class AwsRouteTable(AwsElement):
         self._has_associations = False
         self._routes = []
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         ec2 = boto3.client("ec2")
         self._source_json = None
         if self._source_json is None:
@@ -55,7 +56,8 @@ class AwsRouteTable(AwsElement):
         self._environment.add_to_todo(assoc)
         self._has_associations = True
 
-    def local_finalise(self):
+    @AwsElement.finalise_method
+    def finalise(self):
         # If we have no associations, we might not need to be here =)
         if not self._has_associations and str(self._tags.get_tag("cloudprep:forceCapture")).upper() != "TRUE":
             self.is_valid = False
@@ -82,7 +84,8 @@ class AwsSubnetRouteTableAssociation(AwsElement):
         self._route_table = route_table
         self._subnet_id = subnet_id
 
-    def local_capture(self):
+    @AwsElement.capture_method
+    def capture(self):
         if self._subnet_id is not None:
             self._element["RouteTableId"] = self._route_table.make_reference()
             target_subnet = self._environment.find_by_physical_id(self._subnet_id)
