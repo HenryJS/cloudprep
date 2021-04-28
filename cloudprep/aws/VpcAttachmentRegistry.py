@@ -4,8 +4,8 @@ class VpcAttachmentRegistry:
 
     @staticmethod
     def register_attachment(vpc, subject, attachment):
-        vpc_id = vpc.get_logical_id()
-        subject_id = subject.get_logical_id()
+        vpc_id = vpc.logical_id
+        subject_id = subject.logical_id
 
         if vpc_id not in VpcAttachmentRegistry.__registry:
             VpcAttachmentRegistry.__registry[vpc_id] = {}

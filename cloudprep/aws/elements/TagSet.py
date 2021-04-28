@@ -5,12 +5,13 @@ class TagSet:
         else:
             self._tags = {}
 
+    @property
+    def tags(self):
+        return self._tags
+
     def add_tag(self, key, value):
         if not key.startswith("aws:"):
             self._tags[key] = value
-
-    def get_tags(self):
-        return self._tags
 
     def get_tag(self, tag):
         if tag in self._tags:

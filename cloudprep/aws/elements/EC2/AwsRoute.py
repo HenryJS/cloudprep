@@ -12,12 +12,12 @@ class AwsRoute(AwsElement):
 
     def local_capture(self):
         # ec2 = boto3.client("ec2")
-        # self.set_source_json(None)
+        # self._source_json = None
         # if self._source_json is None:
         #     source_json = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
         # else:
         source_json = self._source_json
-        self.set_source_json(None)
+        self._source_json = None
 
         self._element["RouteTableId"] = self._route_table.make_reference()
         self.copy_if_exists("DestinationCidrBlock", source_json)

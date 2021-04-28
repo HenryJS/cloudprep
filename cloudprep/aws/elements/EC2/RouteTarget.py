@@ -7,3 +7,7 @@ class RouteTarget(AwsElement):
         super().__init__(tag, environment, physical_id)
         self._route = route
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
+
+    def local_capture(self):
+        self._route = None
+        raise NotImplementedError("capture is not implemented in this class.")

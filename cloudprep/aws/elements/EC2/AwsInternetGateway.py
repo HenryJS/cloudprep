@@ -16,7 +16,7 @@ class AwsInternetGateway(RouteTarget):
             source_json = ec2.describe_internet_gateways(InternetGatewayIds=[self._physical_id])["InternetGateways"][0]
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._tags.from_api_result(source_json["Tags"])
@@ -24,7 +24,7 @@ class AwsInternetGateway(RouteTarget):
 
         iga = AwsVpcGatewayAttachment(
             self._environment,
-            vpc.get_physical_id() + self.get_physical_id(),
+            vpc.physical_id + self.physical_id,
             vpc
         )
         iga.set_internet_gateway(self)

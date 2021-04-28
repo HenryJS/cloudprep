@@ -16,6 +16,6 @@ class SimpleElement(AwsElement):
             pass
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         return source_json

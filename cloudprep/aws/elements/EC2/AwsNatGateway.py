@@ -14,7 +14,7 @@ class AwsNatGateway(RouteTarget):
             source_json = ec2.describe_nat_gateways(NatGatewayIds=[self._physical_id])["NatGateways"][0]
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         if source_json["State"] not in ["Pending", "Available"]:
             return

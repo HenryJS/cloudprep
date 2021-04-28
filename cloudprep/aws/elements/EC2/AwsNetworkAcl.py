@@ -16,7 +16,7 @@ class AwsNetworkAcl(AwsElement):
             pass
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         self._element["VpcId"] = self._vpc.make_reference()
         self._tags.from_api_result(source_json)
@@ -53,7 +53,7 @@ class AwsNetworkAclEntry(AwsElement):
 
     def local_capture(self):
         source_json = self._source_json
-        self.set_source_json(None)
+        self._source_json = None
 
         # If we're the DEFAULT DENY then just return because there's already one there
         if source_json["RuleNumber"] == 32767:

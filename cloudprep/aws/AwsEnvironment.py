@@ -20,7 +20,7 @@ class AwsEnvironment:
         return None
 
     def logical_from_physical(self, needle):
-        return self.find_by_physical_id(needle).get_logical_id()
+        return self.find_by_physical_id(needle).logical_id
 
     def add_to_todo(self, element):
         self._todo.append(element)
@@ -29,7 +29,7 @@ class AwsEnvironment:
         if len(self._todo) > 0:
             candidate = self._todo[0]
             # Have we already done so? If so remove and revisit
-            if self.find_by_physical_id(candidate.get_physical_id()) is not None:
+            if self.find_by_physical_id(candidate.physical_id) is not None:
                 self.remove_from_todo(candidate)
                 return self.get_next_todo()
 
@@ -41,8 +41,8 @@ class AwsEnvironment:
         self._todo.remove(task)
 
     def add_resource(self, resource):
-        self.resources[resource.get_physical_id()] = resource
+        self.resources[resource.physical_id] = resource
 
     def add_intermediate_resource(self, resource):
-        self.resources[resource.get_physical_id()] = resource
+        self.resources[resource.physical_id] = resource
 

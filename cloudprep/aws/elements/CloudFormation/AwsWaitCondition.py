@@ -9,7 +9,7 @@ class AwsWaitCondition(AwsElement):
         self.set_defaults({})
 
     def local_capture(self):
-        wait_handle = AwsWaitConditionHandle(self._environment, self.get_physical_id() + "-handle")
+        wait_handle = AwsWaitConditionHandle(self._environment, self.physical_id + "-handle")
         self._environment.add_to_todo(wait_handle)
 
         self._element["Handle"] = wait_handle.make_reference()

@@ -17,7 +17,7 @@ class AwsSecurityGroup(AwsElement):
             source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         self._element["GroupDescription"] = source_json["Description"]
         self._element["VpcId"] = self._environment.find_by_physical_id(source_json["VpcId"]).make_reference()

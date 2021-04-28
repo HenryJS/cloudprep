@@ -20,7 +20,7 @@ class AwsSubnet(AwsElement):
             source_json = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         self._element["AssignIpv6AddressOnCreation"] = source_json["AssignIpv6AddressOnCreation"]
         self._element["AvailabilityZone"] = self.abstract_az(source_json["AvailabilityZone"])

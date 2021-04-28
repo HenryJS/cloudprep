@@ -24,7 +24,7 @@ class AwsEIP(AwsElement):
         #     }
         # }
         source_json = self._source_json
-        self.set_source_json(None)
+        self._source_json = None
 
         if "Tags" in source_json:
             self._tags.from_api_result(source_json["Tags"])

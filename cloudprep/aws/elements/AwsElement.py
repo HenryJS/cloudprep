@@ -8,47 +8,59 @@ class AwsElement:
     def __init__(self, aws_type, environment: AwsEnvironment, physical_id, source_json=None):
         self._environment = environment
 
-        self._element = {}
         self._dependencies = []
-        self._awsType = aws_type
+
+        # Properties
         self._logical_id = self.calculate_logical_id(physical_id)
-        self._defaults = {}
-        self._tags = None
+        self._awsType = aws_type
+        self._element = {}
         self._valid = False
         self._physical_id = physical_id
+
+        self._tags = None
         self._source_json = source_json
 
-    def get_logical_id(self):
+        self._defaults = {}
+
+    @property
+    def logical_id(self):
         return self._logical_id
 
-    def get_physical_id(self):
+    @property
+    def physical_id(self):
         return self._physical_id
 
-    def get_type(self):
+    @property
+    def type(self):
         return self._awsType
 
-    def get_properties(self):
+    @property
+    def properties(self):
         return self._element
 
-    def set_source_json(self, json):
-        self._source_json = json
+    @property
+    def is_valid(self):
+        return self._valid
 
-    def make_valid(self, validity=True):
+    @is_valid.setter
+    def is_valid(self, validity):
         self._valid = validity
 
-    def get_dependencies(self):
+    def make_valid(self, validity=True):
+        self.is_valid = validity
+
+    @property
+    def dependencies(self):
         return self._dependencies
 
     def add_dependency(self, new_dependency):
         if new_dependency not in self._dependencies:
             self._dependencies.append(new_dependency)
 
-    def is_valid(self):
-        return self._valid
-
-    def get_tags(self):
+    @property
+    def tags(self):
         if self._tags:
-            return self._tags.get_tags()
+            return self._tags.tags
         else:
             return None
 
@@ -83,14 +95,14 @@ class AwsElement:
         """ Construct a reference for either this object or from a logical or physical id."""
         if logical_id is None:
             if physical_id is None:
-                logical_id = self.get_logical_id()
+                logical_id = self.logical_id
             else:
                 logical_id = self.calculate_logical_id(physical_id)
 
         return {"Ref": logical_id}
 
     def make_getatt(self, attribute):
-        return {"Fn::GetAtt": [self.get_logical_id(), attribute]}
+        return {"Fn::GetAtt": [self.logical_id, attribute]}
 
     @final
     def capture(self):

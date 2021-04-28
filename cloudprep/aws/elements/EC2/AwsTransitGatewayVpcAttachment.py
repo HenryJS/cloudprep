@@ -15,7 +15,7 @@ class AwsTransitGatewayVpcAttachment(AwsElement):
             pass
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         if source_json["State"] not in ["available", "pending"]:
             return

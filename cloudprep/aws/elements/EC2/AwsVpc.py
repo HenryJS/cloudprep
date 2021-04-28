@@ -90,7 +90,7 @@ class AwsVpc(AwsElement):
             if not subnet.has_route_table():
                 # print("Found a subnet associated with main route table. Manually associating", file=sys.stderr)
                 subnet.set_route_table(self._main_route_table)
-                self._main_route_table.associate_with_subnet(subnet.get_physical_id())
+                self._main_route_table.associate_with_subnet(subnet.physical_id)
                 more_work = True
 
         return more_work

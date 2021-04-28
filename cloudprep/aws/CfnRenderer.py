@@ -19,29 +19,29 @@ class CfnRenderer:
     def render_resources(resource_set):
         response = {}
         for physical_id, resource in resource_set.items():
-            if not resource.is_valid():
+            if not resource.is_valid:
                 continue
 
             r = {
-                "Type": resource.get_type(),
+                "Type": resource.type,
                 "Properties": {}
             }
 
-            if len(resource.get_dependencies()) > 0:
+            if len(resource.dependencies) > 0:
                 r["DependsOn"] = []
-                for dep in resource.get_dependencies():
+                for dep in resource.dependencies:
                     r["DependsOn"].append(dep)
 
-            for (prop, value) in resource.get_properties().items():
+            for (prop, value) in resource.properties.items():
                 if not resource.is_default(prop):
                     r["Properties"][prop] = value
 
-            tags = resource.get_tags()
+            tags = resource.tags
             if tags is not None:
                 r["Properties"]["Tags"] = []
                 for (key, value) in tags.items():
                     r["Properties"]["Tags"].append({"Key": key, "Value": value})
 
-            response[resource.get_logical_id()] = r
+            response[resource.logical_id] = r
 
         return response

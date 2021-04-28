@@ -16,12 +16,12 @@ class AwsRouteTable(AwsElement):
 
     def local_capture(self):
         ec2 = boto3.client("ec2")
-        self.set_source_json(None)
+        self._source_json = None
         if self._source_json is None:
             source_json = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
         else:
             source_json = self._source_json
-            self.set_source_json(None)
+            self._source_json = None
 
         self._element["VpcId"] = self._vpc.make_reference()
         self._tags.from_api_result(source_json)
@@ -58,22 +58,22 @@ class AwsRouteTable(AwsElement):
     def local_finalise(self):
         # If we have no associations, we might not need to be here =)
         if not self._has_associations and str(self._tags.get_tag("cloudprep:forceCapture")).upper() != "TRUE":
-            self.make_valid(False)
+            self.is_valid = False
 
             for route in self._routes:
-                route.make_valid(False)
+                route.is_valid = False
 
             return
 
         # Find those that depend on a TGW and add the explicit dependency
-        vpc_id = self.get_vpc().get_logical_id()
+        vpc_id = self.get_vpc().logical_id
         for route in self._routes:
-            if "TransitGatewayId" in route.get_properties():
+            if "TransitGatewayId" in route.properties:
                 tga = VpcAttachmentRegistry.get_attachment(
                     vpc_logical_id=vpc_id,
-                    subject_logical_id=route.get_properties()["TransitGatewayId"]["Ref"]
+                    subject_logical_id=route.properties["TransitGatewayId"]["Ref"]
                 )
-                route.add_dependency(tga.get_logical_id())
+                route.add_dependency(tga.logical_id)
 
 
 class AwsSubnetRouteTableAssociation(AwsElement):
