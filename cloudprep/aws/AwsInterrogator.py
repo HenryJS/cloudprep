@@ -1,5 +1,6 @@
 import boto3
-from cloudprep.aws.elements.EC2.AwsVpc import AwsVpc
+from .elements.EC2.AwsVpc import AwsVpc
+from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .AwsEnvironment import AwsEnvironment
 
 
@@ -8,7 +9,7 @@ class AwsInterrogator:
         self._environment = environment
         pass
 
-    def interrogate(self):
+    def start_vpc(self):
         # start with some VPCs!
         ec2 = boto3.client("ec2")
         vpcs = ec2.describe_vpcs()
@@ -16,6 +17,13 @@ class AwsInterrogator:
             this_vpc = AwsVpc(self._environment, VPC["VpcId"])
             self._environment.add_to_todo(this_vpc)
 
+    def start_lambda(self):
+        lmb = boto3.client("lambda")
+        functions = lmb.list_functions()
+        for funct in functions["Functions"]:
+            self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], funct))
+
+    def interrogate(self):
         more_work = True
         while more_work:
             self.capture_elements()
