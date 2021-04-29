@@ -2,6 +2,7 @@ import boto3
 
 from .RouteTarget import RouteTarget
 from .AwsEIP import AwsEIP
+import sys
 
 
 class AwsNatGateway(RouteTarget):
@@ -17,7 +18,7 @@ class AwsNatGateway(RouteTarget):
             source_json = self._source_json
             self._source_json = None
 
-        if source_json["State"] not in ["Pending", "Available"]:
+        if source_json["State"] not in ["pending", "available"]:
             return
 
         self._element["SubnetId"] = self._environment.find_by_physical_id(source_json["SubnetId"]).make_reference()
@@ -31,4 +32,4 @@ class AwsNatGateway(RouteTarget):
 
         self._element["AllocationId"] = eip.make_getatt("AllocationId")
 
-        self.make_valid()
+        self.is_valid = True

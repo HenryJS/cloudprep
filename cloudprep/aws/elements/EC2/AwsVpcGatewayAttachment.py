@@ -4,7 +4,7 @@ from ...VpcAttachmentRegistry import VpcAttachmentRegistry
 
 class AwsVpcGatewayAttachment(AwsElement):
     def __init__(self, environment, physical_id, vpc):
-        super().__init__("AWS::EC2::VPCGatewayAttachment", environment, physical_id)
+        super().__init__(environment, "AWS::EC2::VPCGatewayAttachment", physical_id)
         self._vpc = vpc
         self._vpn_gateway = None
         self._internet_gateway = None

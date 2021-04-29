@@ -11,7 +11,7 @@ from .AwsTransitGatewayVpcAttachment import AwsTransitGatewayVpcAttachment
 
 class AwsRouteTable(AwsElement):
     def __init__(self, environment, physical_id, source_json=None, vpc=None):
-        super().__init__("AWS::EC2::RouteTable", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::RouteTable", physical_id, source_json)
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._vpc = vpc
         self._has_associations = False
@@ -86,10 +86,7 @@ class AwsRouteTable(AwsElement):
                     # We get here because we have multiple VPCs pointing at a single TGW.  One of those probably
                     # caused the TGW to be made, but it hasn't yet been linked everywhere.
 
-                    print("Unfound Attachment: ", route.properties["TransitGatewayId"]["Ref"], file=sys.stderr)
                     tgw = self._environment.find_by_logical_id(route.properties["TransitGatewayId"]["Ref"])
-                    print(tgw, file=sys.stderr)
-
                     tga = AwsTransitGatewayVpcAttachment(self._environment, tgw.physical_id, route)
                     self._environment.add_to_todo(tga)
 
@@ -103,7 +100,7 @@ class AwsRouteTable(AwsElement):
 
 class AwsSubnetRouteTableAssociation(AwsElement):
     def __init__(self, environment, physical_id, route_table, subnet_id):
-        super().__init__("AWS::EC2::SubnetRouteTableAssociation", environment, physical_id)
+        super().__init__(environment, "AWS::EC2::SubnetRouteTableAssociation", physical_id)
         self._route_table = route_table
         self._subnet_id = subnet_id
 

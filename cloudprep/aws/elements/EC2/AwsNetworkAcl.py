@@ -4,7 +4,7 @@ from ..TagSet import TagSet
 
 class AwsNetworkAcl(AwsElement):
     def __init__(self, environment, physical_id, vpc, source_json=None):
-        super().__init__("AWS::EC2::NetworkAcl", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::NetworkAcl", physical_id, source_json)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._vpc = vpc
@@ -56,7 +56,7 @@ class AwsNetworkAcl(AwsElement):
 
 class AwsNetworkAclEntry(AwsElement):
     def __init__(self, environment, physical_id, nacl, source_json=None):
-        super().__init__("AWS::EC2::NetworkAclEntry", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::NetworkAclEntry", physical_id, source_json)
         self.set_defaults({})
         self._nacl = nacl
 
@@ -86,7 +86,7 @@ class AwsNetworkAclEntry(AwsElement):
 
 class AwsSubnetNaclAssociation(AwsElement):
     def __init__(self, environment, physical_id, nacl, assoc):
-        super().__init__("AWS::EC2::SubnetNetworkAclAssociation", environment, physical_id, assoc)
+        super().__init__(environment, "AWS::EC2::SubnetNetworkAclAssociation", physical_id, assoc)
         self._nacl = nacl
 
     @AwsElement.capture_method

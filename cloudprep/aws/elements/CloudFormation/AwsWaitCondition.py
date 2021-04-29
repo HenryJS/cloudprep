@@ -4,7 +4,7 @@ from .AwsWaitConditionHandle import AwsWaitConditionHandle
 
 class AwsWaitCondition(AwsElement):
     def __init__(self, environment, physical_id, timeout):
-        super().__init__("AWS::EC2::WaitCondition", environment, physical_id, None)
+        super().__init__(environment, "AWS::EC2::WaitCondition", physical_id, None)
         self._timeout = timeout
         self.set_defaults({})
 

@@ -5,14 +5,14 @@ from ..AwsEnvironment import AwsEnvironment
 
 
 class AwsElement:
-    def __init__(self, aws_type, environment: AwsEnvironment, physical_id, source_json=None):
+    def __init__(self, environment: AwsEnvironment, aws_type, physical_id, source_json=None):
         self._environment = environment
 
         self._dependencies = []
 
         # Properties
         self._logical_id = self.calculate_logical_id(physical_id)
-        self._awsType = aws_type
+        self._aws_type = aws_type
         self._element = {}
         self._valid = False
         self._physical_id = physical_id
@@ -32,7 +32,7 @@ class AwsElement:
 
     @property
     def type(self):
-        return self._awsType
+        return self._aws_type
 
     @property
     def properties(self):
@@ -91,6 +91,10 @@ class AwsElement:
             for entry in source_json[key]:
                 self._element[key].append(self.make_reference(physical_id=entry))
 
+    @property
+    def reference(self):
+        return self.make_reference()
+
     def make_reference(self, logical_id=None, physical_id=None):
         """ Construct a reference for either this object or from a logical or physical id."""
         if logical_id is None:
@@ -115,7 +119,7 @@ class AwsElement:
 
     def capture_method(f):
         def transformed_method(self):
-            print("Capturing %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
+            print("Capturing %s %s" % (self._aws_type, self._physical_id), file=sys.stderr)
             return f(self)
         return transformed_method
 
@@ -125,7 +129,7 @@ class AwsElement:
 
     def finalise_method(f):
         def transformed_method(self):
-            print("Finalising %s %s" % (self._awsType, self._physical_id), file=sys.stderr)
+            print("Finalising %s %s" % (self._aws_type, self._physical_id), file=sys.stderr)
             return f(self)
         return transformed_method
 

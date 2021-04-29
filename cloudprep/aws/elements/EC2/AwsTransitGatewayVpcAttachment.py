@@ -5,7 +5,7 @@ from cloudprep.aws.elements.TagSet import TagSet
 class AwsTransitGatewayVpcAttachment(AwsElement):
 
     def __init__(self, environment, physical_id, source_json=None):
-        super().__init__("AWS::EC2::TransitGatewayAttachment", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::TransitGatewayAttachment", physical_id, source_json)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 

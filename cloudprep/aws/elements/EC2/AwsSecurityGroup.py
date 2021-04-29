@@ -1,4 +1,5 @@
 import boto3
+import sys
 
 from cloudprep.aws.elements.AwsElement import AwsElement
 from .AwsManagedPrefixList import AwsManagedPrefixList
@@ -7,7 +8,7 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsSecurityGroup(AwsElement):
     def __init__(self, environment, physical_id, source_json=None):
-        super().__init__("AWS::EC2::SecurityGroup", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::SecurityGroup", physical_id, source_json)
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
@@ -31,11 +32,11 @@ class AwsSecurityGroup(AwsElement):
         if "Tags" in source_json:
             self._tags.from_api_result(source_json)
 
-        ingress_rules = IngressRuleset(self._environment)
+        ingress_rules = IngressRuleset(self._environment, self)
         ingress_rules.process(source_json["OwnerId"], source_json["IpPermissions"])
         self._element["SecurityGroupIngress"] = ingress_rules.data
 
-        egress_rules = EgressRuleset(self._environment)
+        egress_rules = EgressRuleset(self._environment, self)
         egress_rules.process(source_json["OwnerId"], source_json["IpPermissionsEgress"])
         self._element["SecurityGroupEgress"] = egress_rules.data
 
@@ -43,14 +44,23 @@ class AwsSecurityGroup(AwsElement):
 
 
 class Ruleset:
-    def __init__(self, environment):
+    def __init__(self, environment, parent, rule_class):
         self.data = []
         self._environment = environment
         self._groupIdKey = "NoGroupIdKey"
         self._prefixListIdKey = "NoPrefixListIdKey"
+        self._rule_class = rule_class
+        self._parent = parent
+
+    @property
+    def parent(self):
+        return self._parent
 
     def process(self, owner_id, source_json):
+        rule_number = 0
+
         for rule in source_json:
+
             # Process IPv4 rules.  These are the same between Egress and Ingress.
             for ipRange in rule["IpRanges"]:
                 this_rule = {}
@@ -75,23 +85,25 @@ class Ruleset:
 
             # Process SecurityGroup related rules.
             for userPair in rule["UserIdGroupPairs"]:
-                this_rule = {}
+                this_rule = self._rule_class(self._environment, self._parent.physical_id + "-" + str(rule_number))
+                this_rule.parent = self
                 for key in ["IpProtocol", "ToPort", "FromPort"]:
                     if key in rule:
-                        this_rule[key] = rule[key]
+                        this_rule.properties[key] = rule[key]
                 if "Description" in userPair:
-                    this_rule["Description"] = userPair["Description"]
+                    this_rule.properties["Description"] = userPair["Description"]
 
                 # UserID only applies to inbound rules; this condition will be false for outbound rules.
                 if "UserId" in userPair and userPair["UserId"] != owner_id:
-                    this_rule["SourceSecurityGroupOwnerId"] = userPair["UserId"]
+                    this_rule.properties["SourceSecurityGroupOwnerId"] = userPair["UserId"]
 
                 if "GroupId" in userPair:
-                    this_rule[self._groupIdKey] = {
+                    this_rule.properties[self._groupIdKey] = {
                         "Ref": AwsElement.calculate_logical_id(userPair["GroupId"])
                     }
 
-                self.data.append(this_rule)
+                # self.data.append(this_rule)
+                self._environment.add_to_todo(this_rule)
 
             for prefixList in rule["PrefixListIds"]:
                 this_rule = {}
@@ -107,17 +119,55 @@ class Ruleset:
                     self._environment.add_to_todo(AwsManagedPrefixList(self._environment, prefixList["PrefixListId"]))
                 self.data.append(this_rule)
 
+            rule_number = rule_number + 1
+
 
 class IngressRuleset(Ruleset):
-    def __init__(self, environment):
-        super().__init__(environment)
+    def __init__(self, environment, parent):
+        super().__init__(environment, parent, AwsSecurityGroupIngress)
         self._groupIdKey = "SourceSecurityGroupId"
         self._prefixListIdKey = "SourcePrefixListId"
 
 
 class EgressRuleset(Ruleset):
-    def __init__(self, environment):
-        super().__init__(environment)
+    def __init__(self, environment, parent):
+        super().__init__(environment, parent, AwsSecurityGroupEgress)
         self._groupIdKey = "DestinationSecurityGroupId"
         self._prefixListIdKey = "DestinationPrefixListId"
 
+
+class AwsSecurityGroupRule(AwsElement):
+    def __init__(self, environment, aws_type, physical_id, source_data = None):
+        super().__init__(environment, aws_type, physical_id, source_data)
+        self._parent = None
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, parent):
+        self._parent = parent
+
+
+    def capture_method(f):
+        @AwsElement.capture_method
+        def transformed_method(self):
+            if self.parent:
+                self.properties["GroupId"] = self.parent.parent.reference
+            return f(self)
+        return transformed_method
+
+    @capture_method
+    def capture(self):
+        self.is_valid = True
+
+
+class AwsSecurityGroupIngress(AwsSecurityGroupRule):
+    def __init__(self, environment, physical_id):
+        super().__init__(environment, "AWS::EC2::SecurityGroupIngress", physical_id)
+
+
+class AwsSecurityGroupEgress(AwsSecurityGroupRule):
+    def __init__(self, environment, physical_id):
+        super().__init__(environment, "AWS::EC2::SecurityGroupEgress", physical_id)

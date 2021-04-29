@@ -11,7 +11,7 @@ from .AwsVpcEndpoint import AwsVPCEndpoint
 
 class AwsVpc(AwsElement):
     def __init__(self, environment, physical_id):
-        super().__init__("AWS::EC2::VPC", environment, physical_id)
+        super().__init__(environment, "AWS::EC2::VPC", physical_id)
         self.set_defaults({
             "EnableDnsHostnames": False,
             "EnableDnsSupport": True,

@@ -1,4 +1,5 @@
 import json
+import sys
 
 
 class CfnRenderer:
@@ -18,8 +19,10 @@ class CfnRenderer:
     @staticmethod
     def render_resources(resource_set):
         response = {}
+        print("Rendering CFN.", file=sys.stderr)
         for physical_id, resource in resource_set.items():
             if not resource.is_valid:
+                # print(resource.logical_id, "is not valid.", file=sys.stderr)
                 continue
 
             r = {

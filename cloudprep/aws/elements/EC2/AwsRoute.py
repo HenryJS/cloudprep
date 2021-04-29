@@ -7,7 +7,7 @@ from .RouteTargetBuilder import RouteTargetBuilder
 
 class AwsRoute(AwsElement):
     def __init__(self, environment, physical_id, source_json=None, route_table=None):
-        super().__init__("AWS::EC2::Route", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::Route", physical_id, source_json)
         self._route_table = route_table
 
     @AwsElement.capture_method

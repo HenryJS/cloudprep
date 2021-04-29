@@ -6,7 +6,7 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsManagedPrefixList(AwsElement):
     def __init__(self, environment, physical_id):
-        super().__init__("AWS::EC2::PrefixList", environment, physical_id)
+        super().__init__(environment, "AWS::EC2::PrefixList", physical_id)
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 

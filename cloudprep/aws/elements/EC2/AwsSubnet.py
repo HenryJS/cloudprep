@@ -6,7 +6,7 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 class AwsSubnet(AwsElement):
     def __init__(self, environment, physical_id, source_json=None):
-        super().__init__("AWS::EC2::Subnet", environment, physical_id, source_json)
+        super().__init__(environment, "AWS::EC2::Subnet", physical_id, source_json)
         self.set_defaults({
             "AssignIpv6AddressOnCreation": False,
             "MapPublicIpOnLaunch": False
