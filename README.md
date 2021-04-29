@@ -65,7 +65,7 @@ create a Policy that grants these permissions; it also provides a Role which use
 the user specified on the command line.
 
 ```commandline
-support/install_role.sh <<IAM usser>>
+support/install_role.sh <IAM usser>
 ```
 
 You can of course invoke the script using your own credentials / configuration if you wish.

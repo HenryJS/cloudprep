@@ -1,4 +1,5 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
+from ...VpcAttachmentRegistry import VpcAttachmentRegistry
 
 
 class AwsVpcGatewayAttachment(AwsElement):

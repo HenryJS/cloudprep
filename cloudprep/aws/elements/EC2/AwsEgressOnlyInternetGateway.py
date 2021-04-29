@@ -7,5 +7,5 @@ class AwsEgressOnlyInternetGateway(RouteTarget):
 
     @RouteTarget.capture_method
     def capture(self):
-        self._element["VpcId"] = self._route.get_route_table().get_vpc().make_reference()
+        self._element["VpcId"] = self._route.route_table.get_vpc().make_reference()
         self.is_valid = True

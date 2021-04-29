@@ -35,7 +35,8 @@ class AwsSubnet(AwsElement):
 
         self._element["VpcId"] = {"Ref": (self._environment.logical_from_physical(source_json["VpcId"]))}
 
-        self._tags.from_api_result(source_json["Tags"])
+        if "Tags" in source_json:
+            self._tags.from_api_result(source_json["Tags"])
 
         self.make_valid()
 

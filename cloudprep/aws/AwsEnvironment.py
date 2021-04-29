@@ -19,6 +19,12 @@ class AwsEnvironment:
 
         return None
 
+    def find_by_logical_id(self, needle):
+        for physical_id, candidate in self.resources.items():
+            if candidate.logical_id == needle:
+                return candidate
+        return None
+
     def logical_from_physical(self, needle):
         return self.find_by_physical_id(needle).logical_id
 

@@ -63,7 +63,8 @@ class AwsRoute(AwsElement):
         #       "VpcEndpointId" : String,
         #       "VpcPeeringConnectionId" : String
 
-    def get_route_table(self):
+    @property
+    def route_table(self):
         return self._route_table
 
     @AwsElement.finalise_method

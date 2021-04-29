@@ -131,4 +131,6 @@ class AwsElement:
 
     @finalise_method
     def finalise(self):
+        """ Perform any steps required in order to finish up the object.  Returns True if this method
+        generates more work for the interrogator to perform; False otherwise. """
         return False

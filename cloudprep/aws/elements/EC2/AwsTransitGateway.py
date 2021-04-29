@@ -48,6 +48,6 @@ class AwsTransitGateway(RouteTarget):
             )
             self._environment.add_to_todo(tgva)
 
-            VpcAttachmentRegistry.register_attachment(self._route.get_route_table().get_vpc(), self, tgva)
+            VpcAttachmentRegistry.register_attachment(self._route.route_table.vpc, self, tgva)
 
         self.make_valid()

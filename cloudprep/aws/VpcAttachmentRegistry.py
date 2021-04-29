@@ -4,6 +4,11 @@ class VpcAttachmentRegistry:
 
     @staticmethod
     def register_attachment(vpc, subject, attachment):
+        """ Register an attachment.
+         * vpc: The VPC that will be attached
+         * subject: The thing that will be attached (e.g. IGW, TGW)
+         * attachment: The attachment we'd like to register.
+        """
         vpc_id = vpc.logical_id
         subject_id = subject.logical_id
 

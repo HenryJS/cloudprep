@@ -9,6 +9,7 @@ class AwsNetworkAcl(AwsElement):
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._vpc = vpc
         self._has_associations = False
+        self._rules = []
 
     @AwsElement.capture_method
     def capture(self):
@@ -26,6 +27,7 @@ class AwsNetworkAcl(AwsElement):
         for entry in source_json["Entries"]:
             nacl_entry = AwsNetworkAclEntry(self._environment, self._logical_id + "-entry"+str(n), self, entry)
             self._environment.add_to_todo(nacl_entry)
+            self._rules.append(nacl_entry)
             n = n + 1
 
         n = 0
@@ -41,10 +43,15 @@ class AwsNetworkAcl(AwsElement):
             self._has_associations = True
             n = n + 1
 
+        self.is_valid = True
+
     @AwsElement.finalise_method
     def finalise(self):
-        if self._has_associations:
-            self.make_valid()
+        if not self._has_associations:
+            self.is_valid = False
+
+            for rule in self._rules:
+                rule.is_valid = False
 
 
 class AwsNetworkAclEntry(AwsElement):
@@ -88,5 +95,5 @@ class AwsSubnetNaclAssociation(AwsElement):
 
         self._element["SubnetId"] = \
             self._environment.find_by_physical_id(self._source_json["SubnetId"]).make_reference()
-        self.make_valid()
+        self.is_valid = True
 
