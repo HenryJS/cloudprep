@@ -5,8 +5,8 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsSubnet(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
-        super().__init__(environment, "AWS::EC2::Subnet", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::Subnet", physical_id, **kwargs)
         self.set_defaults({
             "AssignIpv6AddressOnCreation": False,
             "MapPublicIpOnLaunch": False
@@ -17,28 +17,28 @@ class AwsSubnet(AwsElement):
     @AwsElement.capture_method
     def capture(self):
         ec2 = boto3.client("ec2")
-        if self._source_json is None:
-            source_json = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]
+        if self._source_data is None:
+            source_data = ec2.describe_subnets(SubnetIds=[self._physical_id])["Subnets"][0]
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
-        self._element["AssignIpv6AddressOnCreation"] = source_json["AssignIpv6AddressOnCreation"]
-        self._element["AvailabilityZone"] = self.abstract_az(source_json["AvailabilityZone"])
-        self._element["CidrBlock"] = source_json["CidrBlock"]
-        self._element["MapPublicIpOnLaunch"] = source_json["MapPublicIpOnLaunch"]
+        self._element["AssignIpv6AddressOnCreation"] = source_data["AssignIpv6AddressOnCreation"]
+        self._element["AvailabilityZone"] = self.abstract_az(source_data["AvailabilityZone"])
+        self._element["CidrBlock"] = source_data["CidrBlock"]
+        self._element["MapPublicIpOnLaunch"] = source_data["MapPublicIpOnLaunch"]
 
-        if len(source_json["Ipv6CidrBlockAssociationSet"]) > 0:
-            self._element["Ipv6CidrBlock"] = source_json["Ipv6CidrBlockAssociationSet"][0]
+        if len(source_data["Ipv6CidrBlockAssociationSet"]) > 0:
+            self._element["Ipv6CidrBlock"] = source_data["Ipv6CidrBlockAssociationSet"][0]
 
-        self.copy_if_exists("OutpostArn", source_json)
+        self.copy_if_exists("OutpostArn", source_data)
 
-        self._element["VpcId"] = {"Ref": (self._environment.logical_from_physical(source_json["VpcId"]))}
+        self._element["VpcId"] = {"Ref": (self._environment.logical_from_physical(source_data["VpcId"]))}
 
-        if "Tags" in source_json:
-            self._tags.from_api_result(source_json["Tags"])
+        if "Tags" in source_data:
+            self._tags.from_api_result(source_data["Tags"])
 
-        self.make_valid()
+        self.is_valid = True
 
     def set_route_table(self, route_table):
         self._route_table = route_table

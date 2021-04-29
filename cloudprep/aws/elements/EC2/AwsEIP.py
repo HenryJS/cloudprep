@@ -3,8 +3,8 @@ from ..TagSet import TagSet
 
 
 class AwsEIP(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
-        super().__init__(environment, "AWS::EC2::EIP", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::EIP", physical_id, **kwargs)
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self.set_defaults({
             "Domain": "vpc"
@@ -12,8 +12,8 @@ class AwsEIP(AwsElement):
 
     @AwsElement.capture_method
     def capture(self):
-        # if self._source_json is None:
-        #     source_json = None
+        # if self._source_data is None:
+        #     source_data = None
         #     pass
         # else:
         # {
@@ -24,10 +24,10 @@ class AwsEIP(AwsElement):
         #       "PublicIpv4Pool" : String,
         #     }
         # }
-        source_json = self._source_json
-        self._source_json = None
+        source_data = self._source_data
+        self._source_data = None
 
-        if "Tags" in source_json:
-            self._tags.from_api_result(source_json["Tags"])
+        if "Tags" in source_data:
+            self._tags.from_api_result(source_data["Tags"])
 
-        self.make_valid()
+        self.is_valid = True

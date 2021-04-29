@@ -1,10 +1,12 @@
+import sys
+
 from ..AwsElement import AwsElement
 from ..TagSet import TagSet
 
 
 class AwsNetworkAcl(AwsElement):
-    def __init__(self, environment, physical_id, vpc, source_json=None):
-        super().__init__(environment, "AWS::EC2::NetworkAcl", physical_id, source_json)
+    def __init__(self, environment, physical_id, vpc, **kwargs):
+        super().__init__(environment, "AWS::EC2::NetworkAcl", physical_id, **kwargs)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
         self._vpc = vpc
@@ -13,31 +15,31 @@ class AwsNetworkAcl(AwsElement):
 
     @AwsElement.capture_method
     def capture(self):
-        if self._source_json is None:
-            source_json = None
+        if self._source_data is None:
+            source_data = None
             pass
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
         self._element["VpcId"] = self._vpc.make_reference()
-        self._tags.from_api_result(source_json)
+        self._tags.from_api_result(source_data)
 
         n = 0
-        for entry in source_json["Entries"]:
-            nacl_entry = AwsNetworkAclEntry(self._environment, self._logical_id + "-entry"+str(n), self, entry)
+        for entry in source_data["Entries"]:
+            nacl_entry = AwsNetworkAclEntry(self._environment, self._logical_id + "-entry"+str(n), nacl=self, source_data=entry)
             self._environment.add_to_todo(nacl_entry)
             self._rules.append(nacl_entry)
             n = n + 1
 
         n = 0
-        for association in source_json["Associations"]:
+        for association in source_data["Associations"]:
             # (self, environment, physical_id, nacl, assoc):
             assoc = AwsSubnetNaclAssociation(
                 self._environment,
                 association["NetworkAclAssociationId"],
-                self,
-                association
+                nacl=self,
+                source_data=association
             )
             self._environment.add_to_todo(assoc)
             self._has_associations = True
@@ -55,45 +57,45 @@ class AwsNetworkAcl(AwsElement):
 
 
 class AwsNetworkAclEntry(AwsElement):
-    def __init__(self, environment, physical_id, nacl, source_json=None):
-        super().__init__(environment, "AWS::EC2::NetworkAclEntry", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::NetworkAclEntry", physical_id, **kwargs)
         self.set_defaults({})
-        self._nacl = nacl
+        self._nacl = kwargs["nacl"]
 
     @AwsElement.capture_method
     def capture(self):
-        source_json = self._source_json
-        self._source_json = None
+        source_data = self._source_data
+        self._source_data = None
 
         # If we're the DEFAULT DENY then just return because there's already one there
-        if source_json["RuleNumber"] == 32767:
+        if source_data["RuleNumber"] == 32767:
             return
 
-        self.copy_if_exists("CidrBlock", source_json)
-        self.copy_if_exists("Egress", source_json)
-        self.copy_if_exists("Ipv6CidrBlock", source_json)
-        self.copy_if_exists("PortRange", source_json)
-        self.copy_if_exists("Protocol", source_json)
-        self.copy_if_exists("RuleAction", source_json)
-        self.copy_if_exists("RuleNumber", source_json)
+        self.copy_if_exists("CidrBlock", source_data)
+        self.copy_if_exists("Egress", source_data)
+        self.copy_if_exists("Ipv6CidrBlock", source_data)
+        self.copy_if_exists("PortRange", source_data)
+        self.copy_if_exists("Protocol", source_data)
+        self.copy_if_exists("RuleAction", source_data)
+        self.copy_if_exists("RuleNumber", source_data)
 
-        if "IcmpTypeCode" in source_json:
-            self._element["Icmp"] = source_json["IcmpTypeCode"]
+        if "IcmpTypeCode" in source_data:
+            self._element["Icmp"] = source_data["IcmpTypeCode"]
 
         self._element["NetworkAclId"] = self._nacl.make_reference()
-        self.make_valid()
+        self.is_valid = True
 
 
 class AwsSubnetNaclAssociation(AwsElement):
-    def __init__(self, environment, physical_id, nacl, assoc):
-        super().__init__(environment, "AWS::EC2::SubnetNetworkAclAssociation", physical_id, assoc)
-        self._nacl = nacl
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::SubnetNetworkAclAssociation", physical_id, **kwargs)
+        self._nacl = kwargs["nacl"]
 
     @AwsElement.capture_method
     def capture(self):
         self._element["NetworkAclId"] = self._nacl.make_reference()
 
         self._element["SubnetId"] = \
-            self._environment.find_by_physical_id(self._source_json["SubnetId"]).make_reference()
+            self._environment.find_by_physical_id(self._source_data["SubnetId"]).make_reference()
         self.is_valid = True
 

@@ -3,8 +3,8 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class SimpleElement(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
-        super().__init__(environment, "AWS::EC2::SimpleElement", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::SimpleElement", physical_id, kwargs)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
@@ -12,11 +12,11 @@ class SimpleElement(AwsElement):
     def capture(self):
         self._element["PhysicalId"] = self._physical_id
 
-        if self._source_json is None:
-            source_json = None
+        if self._source_data is None:
+            source_data = None
             pass
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
-        return source_json
+        return source_data

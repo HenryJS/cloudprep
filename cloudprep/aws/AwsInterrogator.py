@@ -21,7 +21,7 @@ class AwsInterrogator:
         lmb = boto3.client("lambda")
         functions = lmb.list_functions()
         for funct in functions["Functions"]:
-            self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], funct))
+            self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], source_data=funct))
 
     def interrogate(self):
         more_work = True

@@ -5,7 +5,7 @@ from ..AwsEnvironment import AwsEnvironment
 
 
 class AwsElement:
-    def __init__(self, environment: AwsEnvironment, aws_type, physical_id, source_json=None):
+    def __init__(self, environment: AwsEnvironment, aws_type, physical_id, **kwargs):
         self._environment = environment
 
         self._dependencies = []
@@ -18,7 +18,10 @@ class AwsElement:
         self._physical_id = physical_id
 
         self._tags = None
-        self._source_json = source_json
+        if "source_data" in kwargs:
+            self._source_data = kwargs["source_data"]
+        else:
+            self._source_data = None;
 
         self._defaults = {}
 
@@ -46,9 +49,6 @@ class AwsElement:
     def is_valid(self, validity):
         self._valid = validity
 
-    def make_valid(self, validity=True):
-        self.is_valid = validity
-
     @property
     def dependencies(self):
         return self._dependencies
@@ -74,21 +74,21 @@ class AwsElement:
             value = self._element[key]
         return value == self._defaults[key]
 
-    def copy_if_exists(self, key, source_json):
+    def copy_if_exists(self, key, source_data):
         """ If a key exists, copy it directly"""
-        if key in source_json:
-            self._element[key] = source_json[key]
+        if key in source_data:
+            self._element[key] = source_data[key]
 
-    def refer_if_exists(self, key, source_json):
+    def refer_if_exists(self, key, source_data):
         """" If a key exists, turn it into a reference and copy it here """
-        if key in source_json:
-            self._element[key] = self.make_reference(physical_id=source_json[key])
+        if key in source_data:
+            self._element[key] = self.make_reference(physical_id=source_data[key])
 
-    def array_refer_if_exists(self, key, source_json):
+    def array_refer_if_exists(self, key, source_data):
         """ If a key exists, and is an array, iterate through it and make references. """
-        if key in source_json and isinstance(source_json[key], list):
+        if key in source_data and isinstance(source_data[key], list):
             self._element[key] = []
-            for entry in source_json[key]:
+            for entry in source_data[key]:
                 self._element[key].append(self.make_reference(physical_id=entry))
 
     @property

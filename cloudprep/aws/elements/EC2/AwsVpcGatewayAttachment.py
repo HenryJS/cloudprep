@@ -3,9 +3,9 @@ from ...VpcAttachmentRegistry import VpcAttachmentRegistry
 
 
 class AwsVpcGatewayAttachment(AwsElement):
-    def __init__(self, environment, physical_id, vpc):
-        super().__init__(environment, "AWS::EC2::VPCGatewayAttachment", physical_id)
-        self._vpc = vpc
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::VPCGatewayAttachment", physical_id, **kwargs)
+        self._vpc = kwargs["vpc"]
         self._vpn_gateway = None
         self._internet_gateway = None
 
@@ -25,4 +25,4 @@ class AwsVpcGatewayAttachment(AwsElement):
         if self._vpn_gateway is not None:
             self._element["VpnGatewayId"] = self._vpn_gateway.make_reference()
 
-        self.make_valid()
+        self.is_valid = True

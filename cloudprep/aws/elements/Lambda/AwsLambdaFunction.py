@@ -3,8 +3,8 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsLambdaFunction(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
-        super().__init__(environment, "AWS::Lambda::Function", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::Lambda::Function", physical_id, **kwargs)
         self.set_defaults({})
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
@@ -12,12 +12,12 @@ class AwsLambdaFunction(AwsElement):
     def capture(self):
         self._element["PhysicalId"] = self._physical_id
 
-        if self._source_json is None:
-            source_json = None
+        if self._source_data is None:
+            source_data = None
             pass
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
         self.is_valid = True
-        return source_json
+        return source_data

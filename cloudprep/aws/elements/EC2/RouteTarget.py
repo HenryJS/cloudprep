@@ -3,9 +3,12 @@ from ..TagSet import TagSet
 
 
 class RouteTarget(AwsElement):
-    def __init__(self, tag, environment, physical_id, route):
-        super().__init__(environment, tag, physical_id)
-        self._route = route
+    def __init__(self, tag, environment, physical_id, **kwargs):
+        super().__init__(environment, tag, physical_id, **kwargs)
+        if "route" not in kwargs:
+            raise Exception("Route not specified for RouteTarget " + physical_id)
+
+        self._route = kwargs["route"]
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     @AwsElement.capture_method

@@ -6,24 +6,24 @@ from .RouteTargetBuilder import RouteTargetBuilder
 
 
 class AwsRoute(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None, route_table=None):
-        super().__init__(environment, "AWS::EC2::Route", physical_id, source_json)
-        self._route_table = route_table
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::Route", physical_id, **kwargs)
+        self._route_table = kwargs["route_table"]
 
     @AwsElement.capture_method
     def capture(self):
         # ec2 = boto3.client("ec2")
-        # self._source_json = None
-        # if self._source_json is None:
-        #     source_json = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
+        # self._source_data = None
+        # if self._source_data is None:
+        #     source_data = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
         # else:
-        source_json = self._source_json
-        self._source_json = None
+        source_data = self._source_data
+        self._source_data = None
 
         self._element["RouteTableId"] = self._route_table.make_reference()
-        self.copy_if_exists("DestinationCidrBlock", source_json)
-        self.copy_if_exists("DestinationIpv6CidrBlock", source_json)
-        if source_json["State"] == "blackhole":
+        self.copy_if_exists("DestinationCidrBlock", source_data)
+        self.copy_if_exists("DestinationIpv6CidrBlock", source_data)
+        if source_data["State"] == "blackhole":
             print("-- Route skipped (blackholing)", file=sys.stderr)
             return
 
@@ -39,8 +39,8 @@ class AwsRoute(AwsElement):
             "VpcEndpointId",
             "VpcPeeringConnectionId"
         ]:
-            if target_id_key in source_json:
-                assoc_prefix = source_json[target_id_key].split("-")[0]
+            if target_id_key in source_data:
+                assoc_prefix = source_data[target_id_key].split("-")[0]
                 target_class = RouteTargetBuilder.find_route_target(assoc_prefix)
 
                 if target_class is None:
@@ -48,13 +48,13 @@ class AwsRoute(AwsElement):
 
                 target = target_class(
                     self._environment,
-                    source_json[target_id_key],
-                    self
+                    source_data[target_id_key],
+                    route=self
                 )
                 self._environment.add_to_todo(target)
                 self._element[target_id_key] = target.make_reference()
 
-        self.make_valid()
+        self.is_valid = True
         # TODO:
         #       "CarrierGatewayId" : String,
         #       "InstanceId" : String,
@@ -70,5 +70,5 @@ class AwsRoute(AwsElement):
     @AwsElement.finalise_method
     def finalise(self):
         if "DestinationCidrBlock" not in self._element and "DestinationIpv6CidrBlock" not in self._element:
-            self.make_valid(False)
+            self.is_valid = False
 

@@ -7,40 +7,40 @@ from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsSecurityGroup(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None):
-        super().__init__(environment, "AWS::EC2::SecurityGroup", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::SecurityGroup", physical_id, **kwargs)
         self._physical_id = physical_id
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
 
     @AwsElement.capture_method
     def capture(self):
         ec2 = boto3.client("ec2")
-        if self._source_json is None:
-            source_json = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
+        if self._source_data is None:
+            source_data = ec2.describe_security_groups(GroupIds=[self._physical_id])["SecurityGroups"][0]
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
-        self._element["GroupDescription"] = source_json["Description"]
-        self._element["VpcId"] = self._environment.find_by_physical_id(source_json["VpcId"]).make_reference()
+        self._element["GroupDescription"] = source_data["Description"]
+        self._element["VpcId"] = self._environment.find_by_physical_id(source_data["VpcId"]).make_reference()
 
-        if source_json["GroupName"] == "default":
+        if source_data["GroupName"] == "default":
             self._element["GroupName"] = "was-default"
         else:
-            self._element["GroupName"] = source_json["GroupName"]
+            self._element["GroupName"] = source_data["GroupName"]
 
-        if "Tags" in source_json:
-            self._tags.from_api_result(source_json)
+        if "Tags" in source_data:
+            self._tags.from_api_result(source_data)
 
         ingress_rules = IngressRuleset(self._environment, self)
-        ingress_rules.process(source_json["OwnerId"], source_json["IpPermissions"])
+        ingress_rules.process(source_data["OwnerId"], source_data["IpPermissions"])
         self._element["SecurityGroupIngress"] = ingress_rules.data
 
         egress_rules = EgressRuleset(self._environment, self)
-        egress_rules.process(source_json["OwnerId"], source_json["IpPermissionsEgress"])
+        egress_rules.process(source_data["OwnerId"], source_data["IpPermissionsEgress"])
         self._element["SecurityGroupEgress"] = egress_rules.data
 
-        self.make_valid()
+        self.is_valid = True
 
 
 class Ruleset:
@@ -56,10 +56,10 @@ class Ruleset:
     def parent(self):
         return self._parent
 
-    def process(self, owner_id, source_json):
+    def process(self, owner_id, source_data):
         rule_number = 0
 
-        for rule in source_json:
+        for rule in source_data:
 
             # Process IPv4 rules.  These are the same between Egress and Ingress.
             for ipRange in rule["IpRanges"]:
@@ -137,8 +137,9 @@ class EgressRuleset(Ruleset):
 
 
 class AwsSecurityGroupRule(AwsElement):
-    def __init__(self, environment, aws_type, physical_id, source_data = None):
-        super().__init__(environment, aws_type, physical_id, source_data)
+    def __init__(self, environment, aws_type, physical_id, **kwargs):
+        super().__init__(environment, aws_type, physical_id, **kwargs)
+
         self._parent = None
 
     @property

@@ -10,8 +10,8 @@ from .AwsVpcEndpoint import AwsVPCEndpoint
 
 
 class AwsVpc(AwsElement):
-    def __init__(self, environment, physical_id):
-        super().__init__(environment, "AWS::EC2::VPC", physical_id)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::VPC", physical_id, **kwargs)
         self.set_defaults({
             "EnableDnsHostnames": False,
             "EnableDnsSupport": True,
@@ -24,12 +24,12 @@ class AwsVpc(AwsElement):
     @AwsElement.capture_method
     def capture(self):
         ec2 = boto3.client("ec2")
-        source_json = ec2.describe_vpcs(VpcIds=[self._physical_id])["Vpcs"][0]
+        source_data = ec2.describe_vpcs(VpcIds=[self._physical_id])["Vpcs"][0]
 
-        self.copy_if_exists("CidrBlock", source_json)
-        self.copy_if_exists("InstanceTenancy", source_json)
-        if "Tags" in source_json:
-            self._tags.from_api_result(source_json["Tags"])
+        self.copy_if_exists("CidrBlock", source_data)
+        self.copy_if_exists("InstanceTenancy", source_data)
+        if "Tags" in source_data:
+            self._tags.from_api_result(source_data["Tags"])
 
         for attrib in ["enableDnsSupport", "enableDnsHostnames"]:
             attrib_query = ec2.describe_vpc_attribute(
@@ -46,13 +46,13 @@ class AwsVpc(AwsElement):
 
         for results_page in ec2.get_paginator("describe_subnets").paginate(Filters=vpc_filter):
             for net in results_page["Subnets"]:
-                subnet = AwsSubnet(self._environment, net["SubnetId"], net)
+                subnet = AwsSubnet(self._environment, net["SubnetId"], source_data=net)
                 self._environment.add_to_todo(subnet)
                 self._subnets.append(subnet)
 
         for results_page in ec2.get_paginator("describe_network_acls").paginate(Filters=vpc_filter):
             for nacl in results_page["NetworkAcls"]:
-                network_acl = AwsNetworkAcl(self._environment, nacl["NetworkAclId"], self, nacl)
+                network_acl = AwsNetworkAcl(self._environment, nacl["NetworkAclId"], self, source_data=nacl)
                 self._environment.add_to_todo(network_acl)
 
         for results_page in ec2.get_paginator("describe_security_groups").paginate(Filters=vpc_filter):
@@ -61,21 +61,21 @@ class AwsVpc(AwsElement):
                     AwsSecurityGroup(
                         self._environment,
                         syg["GroupId"],
-                        syg
+                        source_data=syg
                     ))
 
         for rt in ec2.describe_route_tables(Filters=vpc_filter)["RouteTables"]:
-            route_table = AwsRouteTable(self._environment, rt["RouteTableId"], rt, self)
+            route_table = AwsRouteTable(self._environment, rt["RouteTableId"], source_data=rt, vpc=self)
             self._environment.add_to_todo(route_table)
 
         vpce_filter = vpc_filter
         vpce_filter.append({"Name": "vpc-endpoint-type", "Values": ["Interface"]})
         for results_page in ec2.get_paginator("describe_vpc_endpoints").paginate(Filters=vpce_filter):
             for vpce in results_page["VpcEndpoints"]:
-                vpc_endpoint = AwsVPCEndpoint(self._environment, vpce["VpcEndpointId"], self)
+                vpc_endpoint = AwsVPCEndpoint(self._environment, vpce["VpcEndpointId"], source_data=vpce, vpc=self)
                 self._environment.add_to_todo(vpc_endpoint)
 
-        self.make_valid()
+        self.is_valid = True
 
     def set_main_route_table(self, main_rtb):
         self._main_route_table = main_rtb

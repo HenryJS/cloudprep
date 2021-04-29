@@ -3,9 +3,9 @@ from .AwsWaitConditionHandle import AwsWaitConditionHandle
 
 
 class AwsWaitCondition(AwsElement):
-    def __init__(self, environment, physical_id, timeout):
-        super().__init__(environment, "AWS::EC2::WaitCondition", physical_id, None)
-        self._timeout = timeout
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::WaitCondition", physical_id, **kwargs)
+        self._timeout = kwargs["timeout"]
         self.set_defaults({})
 
     @AwsElement.capture_method
@@ -16,4 +16,4 @@ class AwsWaitCondition(AwsElement):
         self._element["Handle"] = wait_handle.make_reference()
         self._element["Timeout"] = self._timeout
 
-        self.make_valid()
+        self.is_valid = True

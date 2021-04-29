@@ -10,28 +10,28 @@ from .AwsTransitGatewayVpcAttachment import AwsTransitGatewayVpcAttachment
 
 
 class AwsRouteTable(AwsElement):
-    def __init__(self, environment, physical_id, source_json=None, vpc=None):
-        super().__init__(environment, "AWS::EC2::RouteTable", physical_id, source_json)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__(environment, "AWS::EC2::RouteTable", physical_id, **kwargs)
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
-        self._vpc = vpc
+        self._vpc = kwargs["vpc"]
         self._has_associations = False
         self._routes = []
 
     @AwsElement.capture_method
     def capture(self):
         ec2 = boto3.client("ec2")
-        self._source_json = None
-        if self._source_json is None:
-            source_json = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
+        self._source_data = None
+        if self._source_data is None:
+            source_data = ec2.describe_route_tables(RouteTableIds=[self._physical_id])["RouteTables"][0]
         else:
-            source_json = self._source_json
-            self._source_json = None
+            source_data = self._source_data
+            self._source_data = None
 
         self._element["VpcId"] = self.vpc.make_reference()
-        self._tags.from_api_result(source_json)
+        self._tags.from_api_result(source_data)
 
         # All the subnets!
-        for association in source_json["Associations"]:
+        for association in source_data["Associations"]:
             # Is this the Main route table?
             if association["Main"]:
                 self._vpc.set_main_route_table(self)
@@ -39,12 +39,12 @@ class AwsRouteTable(AwsElement):
             else:
                 self.associate_with_subnet(association["SubnetId"])
 
-        for route_num, route in zip(range(len(source_json["Routes"])), source_json["Routes"]):
-            rt = AwsRoute(self._environment, self._physical_id + "-route" + str(route_num), route, self)
+        for i, route in zip(range(len(source_data["Routes"])), source_data["Routes"]):
+            rt = AwsRoute(self._environment, self._physical_id + "-route" + str(i), source_data=route, route_table=self)
             self._routes.append(rt)
             self._environment.add_to_todo(rt)
 
-        self.make_valid()
+        self.is_valid = True
 
     @property
     def vpc(self):
@@ -87,7 +87,9 @@ class AwsRouteTable(AwsElement):
                     # caused the TGW to be made, but it hasn't yet been linked everywhere.
 
                     tgw = self._environment.find_by_logical_id(route.properties["TransitGatewayId"]["Ref"])
-                    tga = AwsTransitGatewayVpcAttachment(self._environment, tgw.physical_id, route)
+                    tga = AwsTransitGatewayVpcAttachment(self._environment, tgw.physical_id)
+                    print("TGW Logical ID =", tgw.logical_id)
+                    print("TGA Logical ID =", tga.logical_id)
                     self._environment.add_to_todo(tga)
 
                     VpcAttachmentRegistry.register_attachment(self.vpc, tgw, tga)
@@ -112,4 +114,4 @@ class AwsSubnetRouteTableAssociation(AwsElement):
 
             self._element["SubnetId"] = target_subnet.make_reference()
             target_subnet.set_route_table(self._route_table)
-            self.make_valid()
+            self.is_valid = True

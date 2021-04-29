@@ -2,8 +2,8 @@ from .RouteTarget import RouteTarget
 
 
 class AwsEgressOnlyInternetGateway(RouteTarget):
-    def __init__(self, environment, physical_id, route_table):
-        super().__init__("AWS::EC2::EgressOnlyInternetGateway", environment, physical_id, route_table)
+    def __init__(self, environment, physical_id, **kwargs):
+        super().__init__("AWS::EC2::EgressOnlyInternetGateway", environment, physical_id, **kwargs)
 
     @RouteTarget.capture_method
     def capture(self):
