@@ -40,7 +40,7 @@ class AwsTransitGateway(RouteTarget):
         # TODO: Capture TGW Routes and Route Tables.
 
         attachments = ec2.describe_transit_gateway_vpc_attachments()["TransitGatewayVpcAttachments"]
-        for attachment in attachments:
+        for attachment in [x for x in attachments if x["TransitGatewayId"] == self.physical_id]:
             tgva = AwsTransitGatewayVpcAttachment(
                 self._environment,
                 attachment["TransitGatewayAttachmentId"],

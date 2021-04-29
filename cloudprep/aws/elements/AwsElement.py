@@ -76,17 +76,17 @@ class AwsElement:
 
     def copy_if_exists(self, key, source_data):
         """ If a key exists, copy it directly"""
-        if key in source_data:
+        if source_data and key in source_data:
             self._element[key] = source_data[key]
 
     def refer_if_exists(self, key, source_data):
         """" If a key exists, turn it into a reference and copy it here """
-        if key in source_data:
+        if source_data and key in source_data:
             self._element[key] = self.make_reference(physical_id=source_data[key])
 
     def array_refer_if_exists(self, key, source_data):
         """ If a key exists, and is an array, iterate through it and make references. """
-        if key in source_data and isinstance(source_data[key], list):
+        if source_data and key in source_data and isinstance(source_data[key], list):
             self._element[key] = []
             for entry in source_data[key]:
                 self._element[key].append(self.make_reference(physical_id=entry))
@@ -112,10 +112,6 @@ class AwsElement:
     @staticmethod
     def calculate_logical_id(physical_id):
         return physical_id.replace("-", "")
-        # md5 = hashlib.md5()
-        # md5.update(physical_id.encode("utf-8"))
-        # new_pid = md5.hexdigest()[0:16].upper()
-        # return aws_type[aws_type.rfind(":") + 1:].lower() + str(new_pid)
 
     def capture_method(f):
         def transformed_method(self):

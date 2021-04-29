@@ -1,12 +1,8 @@
-import sys
-
 import boto3
 
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
-from cloudprep.aws.VpcAttachmentRegistry import VpcAttachmentRegistry
 from .AwsRoute import AwsRoute
-from .AwsTransitGatewayVpcAttachment import AwsTransitGatewayVpcAttachment
 
 
 class AwsRouteTable(AwsElement):
@@ -74,29 +70,30 @@ class AwsRouteTable(AwsElement):
             return
 
         # Find those that depend on a TGW and add the explicit dependency
-        vpc_id = self.vpc.logical_id
-        for route in self._routes:
-            if "TransitGatewayId" in route.properties:
-                tga = VpcAttachmentRegistry.get_attachment(
-                    vpc_logical_id=vpc_id,
-                    subject_logical_id=route.properties["TransitGatewayId"]["Ref"]
-                )
-
-                if tga is None:
-                    # We get here because we have multiple VPCs pointing at a single TGW.  One of those probably
-                    # caused the TGW to be made, but it hasn't yet been linked everywhere.
-
-                    tgw = self._environment.find_by_logical_id(route.properties["TransitGatewayId"]["Ref"])
-                    tga = AwsTransitGatewayVpcAttachment(self._environment, tgw.physical_id)
-                    print("TGW Logical ID =", tgw.logical_id)
-                    print("TGA Logical ID =", tga.logical_id)
-                    self._environment.add_to_todo(tga)
-
-                    VpcAttachmentRegistry.register_attachment(self.vpc, tgw, tga)
-
-                    more_work = True
-                else:
-                    route.add_dependency(tga.logical_id)
+        # vpc_id = self.vpc.logical_id
+        # for route in self._routes:
+        #     if "TransitGatewayId" in route.properties:
+        #         tga = VpcAttachmentRegistry.get_attachment(
+        #             vpc_logical_id=vpc_id,
+        #             subject_logical_id=route.properties["TransitGatewayId"]["Ref"]
+        #         )
+        #
+        #         if tga is None:
+        #             # We get here because we have multiple VPCs pointing at a single TGW.  One of those probably
+        #             # caused the TGW to be made, but it hasn't yet been linked everywhere.
+        #
+        #             tgw = self._environment.find_by_logical_id(route.properties["TransitGatewayId"]["Ref"])
+        #             tga = AwsTransitGatewayVpcAttachment(self._environment, tgw.physical_id + "attach" + vpc_id, route=route)
+        #             print("VPC Logical ID =", vpc_id,file=sys.stderr)
+        #             print("TGW Logical ID =", tgw.logical_id,file=sys.stderr)
+        #             print("TGA Logical ID =", tga.logical_id,file=sys.stderr)
+        #             self._environment.add_to_todo(tga)
+        #
+        #             VpcAttachmentRegistry.register_attachment(self.vpc, tgw, tga)
+        #
+        #             more_work = True
+        #         else:
+        #             route.add_dependency(tga.logical_id)
 
         return more_work
 
