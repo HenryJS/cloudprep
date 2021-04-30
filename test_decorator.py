@@ -6,9 +6,10 @@ def decorator(f):
         return f(x)
     return new_func
 
+
 @decorator
 def first_func(x):
-    print("In First Func, x=",x)
+    print("In First Func, x=", x)
     return x+1
 
 

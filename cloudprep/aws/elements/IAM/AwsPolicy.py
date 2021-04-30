@@ -1,9 +1,6 @@
 import boto3
-import sys
 
 from ..AwsElement import AwsElement
-from ..TagSet import TagSet
-from ..AwsARN import AwsARN
 
 
 class AwsPolicy(AwsElement):

@@ -28,8 +28,7 @@ class AwsRole(AwsElement):
             source_data = self._source_data
             self._source_data = None
 
-
-        # {
+        # { TODO: Inline Policies
         #   "Type" : "AWS::IAM::Role",
         #   "Properties" : {
         #       "PermissionsBoundary" : String,

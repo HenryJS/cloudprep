@@ -1,13 +1,13 @@
-class AwsARN():
+class AwsARN:
     def __init__(self, arn):
         self._text = arn
         components = arn.split(":")
         if len(components) == 7:
             _type, self._partition, self._service, self._region, \
-            self._account, self._resource_type, self._resource_id  = components
+                self._account, self._resource_type, self._resource_id = components
         elif len(components) == 6:
             _type, self._partition, self._service, self._region, \
-            self._account, resource = components
+                self._account, resource = components
 
             resource = resource.split("/")
             if len(resource) == 1:

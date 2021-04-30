@@ -21,7 +21,7 @@ class AwsElement:
         if "source_data" in kwargs:
             self._source_data = kwargs["source_data"]
         else:
-            self._source_data = None;
+            self._source_data = None
 
         self._defaults = {}
 
@@ -107,7 +107,6 @@ class AwsElement:
 
     def make_getatt(self, attribute):
         return {"Fn::GetAtt": [self.logical_id, attribute]}
-
 
     @staticmethod
     def calculate_logical_id(physical_id):

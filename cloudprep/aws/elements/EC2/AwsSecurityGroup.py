@@ -150,7 +150,6 @@ class AwsSecurityGroupRule(AwsElement):
     def parent(self, parent):
         self._parent = parent
 
-
     def capture_method(f):
         @AwsElement.capture_method
         def transformed_method(self):

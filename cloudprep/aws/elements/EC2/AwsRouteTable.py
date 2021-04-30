@@ -97,6 +97,7 @@ class AwsRouteTable(AwsElement):
 
         return more_work
 
+
 class AwsSubnetRouteTableAssociation(AwsElement):
     def __init__(self, environment, physical_id, route_table, subnet_id):
         super().__init__(environment, "AWS::EC2::SubnetRouteTableAssociation", physical_id)
