@@ -1,7 +1,9 @@
 import boto3
+import sys
 
-from cloudprep.aws.elements.AwsElement import AwsElement
-from cloudprep.aws.elements.TagSet import TagSet
+from ..AwsElement import AwsElement
+from ..TagSet import TagSet
+from ..AwsARN import AwsARN
 
 
 class AwsRole(AwsElement):
@@ -18,8 +20,8 @@ class AwsRole(AwsElement):
 
     @AwsElement.capture_method
     def capture(self):
+        iam = boto3.client("iam")
         if self._source_data is None:
-            iam = boto3.client("iam")
             source_data = iam.get_role(RoleName=self.physical_id)["Role"]
         else:
             source_data = self._source_data
@@ -34,7 +36,10 @@ class AwsRole(AwsElement):
         #       "Policies" : [ Policy, ... ],
         #     }
         # }
-        self.copy_if_exists("RoleName", source_data)
+
+        # Copying RoleName will cause conflicts, so let's not do it.
+        # self.copy_if_exists("RoleName", source_data)
+
         self.copy_if_exists("Description", source_data)
         self.copy_if_exists("AssumeRolePolicyDocument", source_data)
         self.copy_if_exists("MaxSessionDuration", source_data)
@@ -42,6 +47,24 @@ class AwsRole(AwsElement):
 
         if "Tags" in source_data:
             self._tags.from_api_result(source_data["Tags"])
+
+        # Deal with attached policies!
+        attached_policy_pages = iam.get_paginator("list_attached_role_policies")\
+            .paginate(RoleName=self.physical_id)
+
+        managed_arns = []
+        for page in attached_policy_pages:
+            for policy in page["AttachedPolicies"]:
+                policy_arn = AwsARN(policy["PolicyArn"])
+                # is it managed?
+                if policy_arn.account == "aws":
+                    managed_arns.append(policy["PolicyArn"])
+
+                else:
+                    print("Need to make a Role!", file=sys.stderr)
+
+        if managed_arns:
+            self._element["ManagedPolicyArns"] = managed_arns
 
         self.is_valid = True
 
