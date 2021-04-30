@@ -51,6 +51,10 @@
                 "ec2:DescribeRouteTables",
                 "ec2:DescribeNatGateways",
                 "lambda:ListFunctions",
+                "iam:GetRole",
+                "iam:ListAttachedRolePolicies",
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
                 "cloudformation:DescribeStacks",
                 "cloudformation:GetTemplateSummary",
                 "cloudformation:CreateChangeSet"

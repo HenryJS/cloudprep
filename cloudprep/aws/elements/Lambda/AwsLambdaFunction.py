@@ -49,7 +49,7 @@ class AwsLambdaFunction(AwsElement):
         self.copy_if_exists("FunctionName", source_data)
 
         role = AwsRole(self._environment, AwsARN(source_data["Role"]))
-        self._element["role"] = role.reference
+        self._element["role"] = role.arn_reference
         self._environment.add_to_todo(role)
 
         self.is_valid = True

@@ -1,6 +1,7 @@
 import boto3
 import sys
 
+from .AwsPolicy import AwsPolicy
 from ..AwsElement import AwsElement
 from ..TagSet import TagSet
 from ..AwsARN import AwsARN
@@ -31,7 +32,6 @@ class AwsRole(AwsElement):
         # {
         #   "Type" : "AWS::IAM::Role",
         #   "Properties" : {
-        #       "ManagedPolicyArns" : [ String, ... ],
         #       "PermissionsBoundary" : String,
         #       "Policies" : [ Policy, ... ],
         #     }
@@ -61,12 +61,17 @@ class AwsRole(AwsElement):
                     managed_arns.append(policy["PolicyArn"])
 
                 else:
-                    print("Need to make a Role!", file=sys.stderr)
+                    pol = AwsPolicy(self._environment, policy_arn)
+                    pol.add_dependant_role(self)
+                    self._environment.add_to_todo(pol)
 
         if managed_arns:
             self._element["ManagedPolicyArns"] = managed_arns
 
         self.is_valid = True
+
+    def policy_from_arn(self, policy_arn):
+        pass
 
     def derive_path(self):
         start = self._arn.rfind(":") + 1
@@ -74,5 +79,5 @@ class AwsRole(AwsElement):
         return self._arn[start:fin]
 
     @property
-    def reference(self):
+    def arn_reference(self):
         return self.make_reference(logical_id=self.make_getatt("Arn"))

@@ -46,6 +46,8 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
     the tag `cloudprep:forceCapture: True`
 * **EgressOnlyInternetGateways, VpcEndpoints**: Cloudformation currently does not support tagging, thus all your tags
   will be lost.  Sorry about that.
+* **Policies**: Policies contain Resources; these are typically ARNs.  At present, ARNs are copied wholesale; this is
+  probably not what you want - it's todo.
   
 
 ### Limitations

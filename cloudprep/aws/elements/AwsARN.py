@@ -1,5 +1,6 @@
 class AwsARN():
     def __init__(self, arn):
+        self._text = arn
         components = arn.split(":")
         if len(components) == 7:
             _type, self._partition, self._service, self._region, \
@@ -23,6 +24,10 @@ class AwsARN():
                 self._resource_type = resource[0]
                 self._resource_path = "/" + "/".join(resource[1:-1]) + "/"
                 self._resource_id = resource[-1]
+
+    @property
+    def text(self):
+        return self._text
 
     @property
     def partition(self):
