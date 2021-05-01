@@ -17,12 +17,12 @@ class RouteTargetBuilder:
     }
 
     @staticmethod
-    def find_route_target(prefix):
+    def find_route_target(prefix, **kwargs):
         if prefix not in RouteTargetBuilder.TARGET_ASSOC:
             raise NotImplementedError(prefix + " is not a supported route target.")
 
         if RouteTargetBuilder.TARGET_ASSOC[prefix] is None:
             return None
 
-        return RouteTargetBuilder.TARGET_ASSOC[prefix]
+        return RouteTargetBuilder.TARGET_ASSOC[prefix](**kwargs)
 

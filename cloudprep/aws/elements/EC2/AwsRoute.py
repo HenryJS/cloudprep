@@ -41,16 +41,12 @@ class AwsRoute(AwsElement):
         ]:
             if target_id_key in source_data:
                 assoc_prefix = source_data[target_id_key].split("-")[0]
-                target_class = RouteTargetBuilder.find_route_target(assoc_prefix)
+                kwargs = { "environment": self._environment, "physical_id": source_data[target_id_key], "route": self}
+                target = RouteTargetBuilder.find_route_target(assoc_prefix, **kwargs )
 
-                if target_class is None:
+                if target is None:
                     return
 
-                target = target_class(
-                    self._environment,
-                    source_data[target_id_key],
-                    route=self
-                )
                 self._environment.add_to_todo(target)
                 self._element[target_id_key] = target.make_reference()
 
