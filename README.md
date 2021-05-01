@@ -48,6 +48,10 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
   will be lost.  Sorry about that.
 * **Policies**: Policies contain Resources; these are typically ARNs.  At present, ARNs are copied wholesale; this is
   probably not what you want - it's todo.
+  * Tags are not supported by CloudFormation.
+* **Lambdas**
+  * Concurrency is hard to read, so it'll default to 1,000.
+  * CodeSigningConfigArn is not supported by CloudFormation
   
 
 ### Limitations

@@ -2,6 +2,8 @@ import boto3
 from .elements.EC2.AwsVpc import AwsVpc
 from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .AwsEnvironment import AwsEnvironment
+from .elements.AwsARN import AwsARN
+from .elements.ArnToElement import element_from_arn
 
 
 class AwsInterrogator:
@@ -17,11 +19,14 @@ class AwsInterrogator:
             this_vpc = AwsVpc(self._environment, VPC["VpcId"])
             self._environment.add_to_todo(this_vpc)
 
-    def start_lambda(self):
-        lmb = boto3.client("lambda")
-        functions = lmb.list_functions()
-        for funct in functions["Functions"]:
-            self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], source_data=funct))
+    def start_lambda(self, id):
+        if id is True:
+            lmb = boto3.client("lambda")
+            functions = lmb.list_functions()
+            for funct in functions["Functions"]:
+                self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], source_data=funct))
+        else:
+            self._environment.add_to_todo(element_from_arn(self._environment, AwsARN(id)))
 
     def interrogate(self):
         more_work = True
