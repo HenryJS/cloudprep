@@ -50,7 +50,10 @@ class AwsLambdaFunction(AwsElement):
         self._element["role"] = role.arn_reference
         self._environment.add_to_todo(role)
 
-        self._tags.from_api_result(source_data)
+        #TODO: Sort tags
+        # self._tags.from_api_result(configuration)
+
+        self._environment.add_parameter(**{ "Name": "Code URI" })
         self.is_valid = True
 
     # @staticmethod

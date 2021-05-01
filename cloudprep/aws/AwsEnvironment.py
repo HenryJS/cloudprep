@@ -52,3 +52,11 @@ class AwsEnvironment:
     def add_intermediate_resource(self, resource):
         self.resources[resource.physical_id] = resource
 
+    def add_parameter(self, **kwargs):
+        """ Parameters:
+         * Name: The parameter name (mandatory)
+         * Description: The parameter description (mandatory)
+         * Type: Parameter type (optional)
+         * AllowedValues: A set of optional values to constrain input (optional)
+         """
+        self.parameters[kwargs["Name"]] = kwargs

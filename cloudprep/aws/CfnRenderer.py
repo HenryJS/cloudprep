@@ -9,6 +9,7 @@ class CfnRenderer:
     def render(self):
         print(json.dumps(
             {
+                "Parameters": self._environment.parameters,
                 "Description": self._environment.description,
                 "Mappings": self._environment.mappings,
                 "Resources": self.render_resources(self._environment.resources),
