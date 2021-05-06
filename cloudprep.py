@@ -9,7 +9,11 @@ from cloudprep.aws.CfnRenderer import CfnRenderer
 parser = argparse.ArgumentParser(description='Record AWS configuration.')
 parser.add_argument(
     '--vpc',
-    action='store_true',
+    action='store',
+    dest="vpc",
+    const=True,
+    default=False,
+    nargs="?",
     help='Interrogate VPCs')
 parser.add_argument(
     '--llambda',
@@ -28,7 +32,7 @@ options = parser.parse_args()
 
 interrogator = AwsInterrogator()
 if options.vpc:
-    interrogator.start_vpc()
+    interrogator.start_vpc(options.vpc)
 
 if options.llambda:
     interrogator.start_lambda(options.llambda)

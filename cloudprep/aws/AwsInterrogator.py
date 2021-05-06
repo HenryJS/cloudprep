@@ -12,13 +12,16 @@ class AwsInterrogator:
         self._environment = environment
         pass
 
-    def start_vpc(self):
-        # start with some VPCs!
-        ec2 = boto3.client("ec2")
-        vpcs = ec2.describe_vpcs()
-        for VPC in vpcs["Vpcs"]:
-            this_vpc = AwsVpc(self._environment, VPC["VpcId"])
-            self._environment.add_to_todo(this_vpc)
+    def start_vpc(self, vpc_id):
+        if vpc_id is True:
+            # start with some VPCs!
+            ec2 = boto3.client("ec2")
+            vpcs = ec2.describe_vpcs()
+            for VPC in vpcs["Vpcs"]:
+                this_vpc = AwsVpc(self._environment, VPC["VpcId"])
+                self._environment.add_to_todo(this_vpc)
+        else:
+            self._environment.add_to_todo(AwsVpc(self._environment, vpc_id))
 
     def start_lambda(self, id):
         if id is True:

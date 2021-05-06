@@ -2,7 +2,7 @@
 
 CloudPrep is a tool for taking an existing cloud environment and translating into CloudFormation.
 
-###Key design considerations
+### Key design considerations
 * Cloud agnostic by intent; however, currently heavily AWS focussed.
 * Idempotent.  Run twice, get the same output.  This means you should be able to use it to create ChangeSets and update
   environments in-situ without considerable data loss.
@@ -19,6 +19,9 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::NatGateway
 * AWS::EC2::NetworkAcl (plus entries and associations)
 * AWS::EC2::VPCEndpoint
+* AWS::IAM::ManagedPolicy
+* AWS::IAM::Role
+
 
 ### Partial Support
 * AWS::EC2::VpcGatewayAttachment
@@ -33,7 +36,9 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::TransitGateway
   * Routes pointing at a TransitGateway will cause the script to capture that TGW and its attachments to the VPC;
     however,the script currenly stopes there. RouteTables, DX connections etc are not captured.  Peering will likely
-    always require a manual step.  
+    always require a manual step.
+* AWS::EC2::Lambda
+  * Basic functionality is there; Lambdas are *complicated*. 
 
 ### Notes
 * **RouteTables, NetworkACLs and SecurityGroups**: 
@@ -50,9 +55,20 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
   probably not what you want - it's todo.
   * Tags are not supported by CloudFormation.
 * **Lambdas**
-  * Concurrency is hard to read, so it'll default to 1,000.
   * CodeSigningConfigArn is not supported by CloudFormation
-  
+  * Running cloudprep will download the code into an artefact; this needs to be uploaded
+    to S3 before the CFN script is deployed.  The name of the bucket is provided as a parameter.  For example:
+    
+```commandline
+$ ./cloudprep --llambda IsTheSkyRedLambda > skyredlambda.json
+$ aws s3 mb s3://is-the-sky-red-artefacts
+$ aws s3 syn artefacts/ s3://is-the-sky-red-artefacts
+$ aws cloudformation deploy \
+    --template-file skyredlambda.json \
+    --stack-name IsTheSkyRed2 \
+    --capabilities CAPABILITY_IAM \
+    --parameter ArtefactBucket=is-the-sky-red-artefacts
+```
 
 ### Limitations
 
@@ -78,8 +94,30 @@ You can of course invoke the script using your own credentials / configuration i
 
 ### Invocation
 
+When invoking cloudprep, you need to give it entry point(s), from which it will start.  Any resources on which these 
+depend will be captured an the system will crawl until it reaches its natural limits.
+
+Note: If an ID/ARN is optional, ommiting it will capture all of the resource type.
+
+Note: You can specify multiple entry points - but only one of each type!
+
+* Interrogate VPC:
+
 ```commandline
-./cloudprep.py > my_json_output
+$ ./cloudprep.py --vpc [ <VPC ID> ] > my_vpcs.json
+```
+
+* Interrogate a Lambda: 
+  (note the extra 'l' to avoid python keyword conflicts)
+  
+```commandline
+$ ./cloudprep.py --llambda [ <lambda ARN> ] > my_lambda.json
+```
+
+* Interrogate a given Role (the ARN is mandatory):
+
+```commandline
+$ ./cloudprep.py --role <role ARN> > my_role.json
 ```
 
 This will take the default profile's credentials and examine the default profile's region for VPCs.  It'll then follow
