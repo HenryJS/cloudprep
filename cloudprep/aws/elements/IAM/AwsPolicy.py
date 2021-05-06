@@ -28,6 +28,7 @@ class AwsPolicy(AwsElement):
         )
         # TODO: The Resource section will have a load of values that will not apply in the new world!
         self._element["PolicyDocument"] = this_version["PolicyVersion"]["Document"]
+        # TODO: PolicyName is required. And it needs to be made unique.
 
         self.is_valid = True
         return
