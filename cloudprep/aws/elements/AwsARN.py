@@ -25,6 +25,9 @@ class AwsARN:
                 self._resource_path = "/" + "/".join(resource[1:-1]) + "/"
                 self._resource_id = resource[-1]
 
+        else:
+            raise Exception("Unfamiliar format:" + arn)
+
     @property
     def text(self):
         return self._text

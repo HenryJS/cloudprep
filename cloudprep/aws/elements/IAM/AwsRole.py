@@ -77,6 +77,3 @@ class AwsRole(AwsElement):
         fin = self._arn.rfind("/")
         return self._arn[start:fin]
 
-    @property
-    def arn_reference(self):
-        return self.make_reference(logical_id=self.make_getatt("Arn"))

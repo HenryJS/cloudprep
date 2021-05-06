@@ -23,4 +23,7 @@ class TagSet:
         if "Tags" in api_result:
             api_result = api_result["Tags"]
         for tag in api_result:
-            self.add_tag(tag["Key"], tag["Value"])
+            if "Key" in tag:
+                self.add_tag(tag["Key"], tag["Value"])
+            else:
+                self.add_tag(tag, api_result[tag])

@@ -56,7 +56,14 @@ class AwsEnvironment:
         """ Parameters:
          * Name: The parameter name (mandatory)
          * Description: The parameter description (mandatory)
-         * Type: Parameter type (optional)
+         * Type: Parameter type (optional, default: "String")
+         * Default: The default value (optional)
          * AllowedValues: A set of optional values to constrain input (optional)
          """
-        self.parameters[kwargs["Name"]] = kwargs
+        name = kwargs["Name"]
+        del kwargs["Name"]
+
+        if "Type" not in kwargs:
+            kwargs["Type"] = "String"
+
+        self.parameters[name] = kwargs
