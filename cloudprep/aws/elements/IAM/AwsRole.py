@@ -29,10 +29,6 @@ class AwsRole(AwsElement):
             source_data = self._source_data
             self._source_data = None
 
-        # { TODO: Inline Policies
-        #       "PermissionsBoundary" : String,
-
-
         # Copying RoleName will cause conflicts, so let's not do it.
         self.copy_if_exists("Description", source_data)
         self.copy_if_exists("AssumeRolePolicyDocument", source_data)
