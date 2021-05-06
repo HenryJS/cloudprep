@@ -2,6 +2,7 @@ import boto3
 import sys
 import requests
 import os
+import hashlib
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
 from ..IAM.AwsRole import AwsRole
@@ -45,14 +46,13 @@ class AwsLambdaFunction(AwsElement):
 
         self.copy_if_exists("Description", configuration)
         self.copy_if_exists("Environment", configuration)
-        self.copy_if_exists("FunctionName", configuration)
         self.copy_if_exists("Handler", configuration)
         self.copy_if_exists("MemorySize", configuration)
         self.copy_if_exists("Runtime", configuration)
-        self.copy_if_exists("Timeout", configuration)\
+        self.copy_if_exists("Timeout", configuration)
 
         role = AwsRole(self._environment, AwsARN(configuration["Role"]))
-        self._element["role"] = role.make_getatt("Arn")
+        self._element["Role"] = role.make_getatt("Arn")
         self._environment.add_to_todo(role)
 
         self._tags.from_api_result(source_data)

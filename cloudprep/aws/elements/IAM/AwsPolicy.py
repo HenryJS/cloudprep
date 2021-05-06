@@ -1,11 +1,12 @@
 import boto3
+import hashlib
 
 from ..AwsElement import AwsElement
 
 
 class AwsPolicy(AwsElement):
-    def __init__(self, environment, arn, **kwargs):
-        super().__init__(environment, "AWS::IAM::Policy", arn.resource_id, **kwargs)
+    def __init__(self, environment, aws_type, arn, **kwargs):
+        super().__init__(environment, aws_type, arn.resource_id, **kwargs)
 
         self._arn = arn
 
@@ -18,20 +19,24 @@ class AwsPolicy(AwsElement):
         self.set_defaults({
         })
 
-    @AwsElement.capture_method
-    def capture(self):
-        iam = boto3.client("iam")
-        this_policy = iam.get_policy(PolicyArn=self._arn.text)["Policy"]
-        this_version = iam.get_policy_version(
-            PolicyArn=self._arn.text,
-            VersionId=this_policy["DefaultVersionId"]
-        )
-        # TODO: The Resource section will have a load of values that will not apply in the new world!
-        self._element["PolicyDocument"] = this_version["PolicyVersion"]["Document"]
-        # TODO: PolicyName is required. And it needs to be made unique.
+    def policy_capture(child_func):
+        @AwsElement.capture_method
+        def capture(self):
+            iam = boto3.client("iam")
+            this_policy = iam.get_policy(PolicyArn=self._arn.text)["Policy"]
 
-        self.is_valid = True
-        return
+            this_version = iam.get_policy_version(
+                PolicyArn=self._arn.text,
+                VersionId=this_policy["DefaultVersionId"]
+            )
+
+            # TODO: The Resource section will have a load of values that will not apply in the new world!
+            self._element["PolicyDocument"] = this_version["PolicyVersion"]["Document"]
+
+            child_func(self, this_policy, this_version)
+            return
+
+        return capture
 
     def add_dependant_role(self, role):
         self._dependents["Roles"].append(role)

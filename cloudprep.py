@@ -19,6 +19,11 @@ parser.add_argument(
     default=False,
     nargs="?",
     help='Interrogate Lambdas')
+parser.add_argument(
+    '--role',
+    action='store',
+    dest="role",
+    help='Interrogate Lambdas')
 options = parser.parse_args()
 
 interrogator = AwsInterrogator()
@@ -27,6 +32,9 @@ if options.vpc:
 
 if options.llambda:
     interrogator.start_lambda(options.llambda)
+
+if options.role:
+    interrogator.start_role(options.role)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)

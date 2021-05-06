@@ -1,5 +1,5 @@
 import sys
-from typing import final
+import hashlib
 
 from ..AwsEnvironment import AwsEnvironment
 from .AwsARN import AwsARN
@@ -138,3 +138,8 @@ class AwsElement:
     @staticmethod
     def create_from_arn(arn: AwsARN):
         return None
+
+    def make_unique(self, identifier):
+        return {
+            "Fn::Sub": "${AWS::StackName}-" + identifier + "-" + hashlib.md5(identifier.encode('utf-8')).hexdigest()[:8].upper()
+        }

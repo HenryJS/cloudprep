@@ -57,6 +57,8 @@
                 "iam:ListAttachedRolePolicies",
                 "iam:GetPolicy",
                 "iam:GetPolicyVersion",
+                "iam::ListRolePolicies",
+                "iam::GetRolePolicy",
                 "cloudformation:DescribeStacks",
                 "cloudformation:GetTemplateSummary",
                 "cloudformation:CreateChangeSet"

@@ -1,9 +1,10 @@
 import boto3
 from .elements.EC2.AwsVpc import AwsVpc
 from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
-from .AwsEnvironment import AwsEnvironment
+from .elements.IAM.AwsRole import AwsRole
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
+from .AwsEnvironment import AwsEnvironment
 
 
 class AwsInterrogator:
@@ -27,6 +28,10 @@ class AwsInterrogator:
                 self._environment.add_to_todo(AwsLambdaFunction(self._environment, funct["FunctionName"], source_data=funct))
         else:
             self._environment.add_to_todo(element_from_arn(self._environment, AwsARN(id)))
+
+    def start_role(self, text_arn):
+        arn = AwsARN(text_arn)
+        self._environment.add_to_todo(AwsRole(self._environment, arn))
 
     def interrogate(self):
         more_work = True

@@ -2,6 +2,7 @@ import boto3
 import sys
 
 from .AwsPolicy import AwsPolicy
+from .AwsManagedPolicy import AwsManagedPolicy
 from ..AwsElement import AwsElement
 from ..TagSet import TagSet
 from ..AwsARN import AwsARN
@@ -29,16 +30,10 @@ class AwsRole(AwsElement):
             self._source_data = None
 
         # { TODO: Inline Policies
-        #   "Type" : "AWS::IAM::Role",
-        #   "Properties" : {
         #       "PermissionsBoundary" : String,
-        #       "Policies" : [ Policy, ... ],
-        #     }
-        # }
+
 
         # Copying RoleName will cause conflicts, so let's not do it.
-        # self.copy_if_exists("RoleName", source_data)
-
         self.copy_if_exists("Description", source_data)
         self.copy_if_exists("AssumeRolePolicyDocument", source_data)
         self.copy_if_exists("MaxSessionDuration", source_data)
@@ -47,7 +42,7 @@ class AwsRole(AwsElement):
         if "Tags" in source_data:
             self._tags.from_api_result(source_data["Tags"])
 
-        # Deal with attached policies!
+        # Deal with Managed Policies
         attached_policy_pages = iam.get_paginator("list_attached_role_policies")\
             .paginate(RoleName=self.physical_id)
 
@@ -58,14 +53,38 @@ class AwsRole(AwsElement):
                 # is it managed?
                 if policy_arn.account == "aws":
                     managed_arns.append(policy["PolicyArn"])
-
                 else:
-                    pol = AwsPolicy(self._environment, policy_arn)
-                    pol.add_dependant_role(self)
+                    pol = AwsManagedPolicy(self._environment, policy_arn)
+                    managed_arns.append(pol.reference)
                     self._environment.add_to_todo(pol)
 
         if managed_arns:
             self._element["ManagedPolicyArns"] = managed_arns
+
+        # Inline Policies
+        inline_policies = []
+        inline_policy_pages = iam.get_paginator("list_role_policies").paginate(RoleName=self.physical_id)
+        for page in inline_policy_pages:
+            for policy_name in page["PolicyNames"]:
+                inline_policy = iam.get_role_policy(RoleName=self.physical_id, PolicyName=policy_name)
+                del inline_policy["RoleName"]
+                del inline_policy["ResponseMetadata"]
+                inline_policies.append(inline_policy)
+
+        if inline_policies:
+            self._element["Policies"] = inline_policies
+
+        # Permissions Boundary
+        if "PermissionsBoundary" in source_data:
+            if source_data["PermissionsBoundary"]["PermissionsBoundaryType"] == "Policy":
+                policy_arn = AwsARN(source_data["PermissionsBoundary"]["PermissionsBoundaryArn"])
+                # is it managed?
+                if policy_arn.account == "aws":
+                    self._element["PermissionsBoundary"] = policy_arn.text
+                else:
+                    pol = AwsManagedPolicy(self._environment, policy_arn)
+                    self._element["PermissionsBoundary"] =pol.reference
+                    self._environment.add_to_todo(pol)
 
         self.is_valid = True
 
