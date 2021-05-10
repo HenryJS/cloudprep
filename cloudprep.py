@@ -28,6 +28,15 @@ parser.add_argument(
     action='store',
     dest="role",
     help='Interrogate Lambdas')
+parser.add_argument(
+    '--bucket',
+    action='store',
+    dest="bucket",
+    const=True,
+    default=False,
+    nargs="?",
+    help='Interrogate Bucket(s)')
+
 options = parser.parse_args()
 
 interrogator = AwsInterrogator()
@@ -39,6 +48,9 @@ if options.llambda:
 
 if options.role:
     interrogator.start_role(options.role)
+
+if options.bucket:
+    interrogator.start_bucket(options.bucket)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)

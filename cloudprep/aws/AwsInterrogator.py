@@ -1,7 +1,10 @@
+import json
+
 import boto3
 from .elements.EC2.AwsVpc import AwsVpc
 from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .elements.IAM.AwsRole import AwsRole
+from .elements.S3.AwsBucket import AwsBucket
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
 from .AwsEnvironment import AwsEnvironment
@@ -35,6 +38,15 @@ class AwsInterrogator:
     def start_role(self, text_arn):
         arn = AwsARN(text_arn)
         self._environment.add_to_todo(AwsRole(self._environment, arn))
+
+    def start_bucket(self, bucket_name):
+        s3 = boto3.client("s3")
+        if bucket_name is True:
+            bucket_response = s3.list_buckets()
+            for bucket in bucket_response["Buckets"]:
+                self._environment.add_to_todo(AwsBucket(self._environment, bucket["Name"]))
+        else:
+            self._environment.add_to_todo(AwsBucket(self._environment, bucket_name))
 
     def interrogate(self):
         more_work = True

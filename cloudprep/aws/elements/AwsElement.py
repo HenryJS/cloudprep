@@ -1,5 +1,6 @@
 import sys
 import hashlib
+import re
 
 from ..AwsEnvironment import AwsEnvironment
 from .AwsARN import AwsARN
@@ -111,7 +112,8 @@ class AwsElement:
 
     @staticmethod
     def calculate_logical_id(physical_id):
-        return physical_id.replace("-", "")
+        # return physical_id.replace("-", "").replace
+        return re.sub("\W", "", physical_id)
 
     def capture_method(f):
         def transformed_method(self):
