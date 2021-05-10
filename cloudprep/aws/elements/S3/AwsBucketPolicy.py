@@ -17,25 +17,28 @@ class AwsBucketPolicy(AwsElement):
         account_id = boto3.client('sts').get_caller_identity().get('Account')
 
         policy_json = json.loads(self._policy_doc)
-        stmt = policy_json["Statement"][0]
+        for stmt in policy_json["Statement"]:
+            # The ResourceArn probably points to a static bucket.
+            resource_arn = AwsARN(stmt["Resource"])
+            if resource_arn.resource_type:
+                resource_arn.resource_type = self._bucket
+            else:
+                resource_arn.resource_id = self._bucket
+            # self._environment.add_warning("Translating resource "+stmt["Resource"] + " to " + resource_arn.text, self)
+            stmt["Resource"] = {"Fn::Sub": resource_arn.text}
 
-        # The ResourceArn probably points to a static bucket.
-        resource_arn = AwsARN(stmt["Resource"])
-        resource_arn.resource_type = self._bucket
-        stmt["Resource"] = {"Fn::Sub": resource_arn.text}
+            # There may be conditions attached.
+            if "Condition" in stmt:
+                for comparitor, clause in stmt["Condition"].items():
+                    if "aws:SourceAccount" in clause and clause["aws:SourceAccount"] == account_id:
+                        clause ["aws:SourceAccount"] = {"Fn::Sub": "${AWS::AccountId}"}
+                        self._environment.add_warning("aws:SourceAccount assumed to be my account in AwsBucketPolicy", self.physical_id)
 
-        # There may be conditions attached.
-        if "Condition" in stmt:
-            for comparitor, clause in stmt["Condition"].items():
-                if "aws:SourceAccount" in clause and clause["aws:SourceAccount"] == account_id:
-                    clause ["aws:SourceAccount"] = {"Fn::Sub": "${AWS::AccountId}"}
-                    self._environment.add_warning("aws:SourceAccount assumed to be my account in AwsBucketPolicy", self.physical_id)
-
-                if "aws:SourceArn" in clause:
-                    source_arn = AwsARN(stmt["Condition"]["ArnLike"]["aws:SourceArn"])
-                    if source_arn.resource_id == self._original_bucket:
-                        source_arn.resource_id = self._bucket
-                        clause ["aws:SourceArn"] = {"Fn::Sub": source_arn.text}
+                    if "aws:SourceArn" in clause:
+                        source_arn = AwsARN(stmt["Condition"]["ArnLike"]["aws:SourceArn"])
+                        if source_arn.resource_id == self._original_bucket:
+                            source_arn.resource_id = self._bucket
+                            clause ["aws:SourceArn"] = {"Fn::Sub": source_arn.text}
 
         self._element["PolicyDocument"] = policy_json
         self.is_valid = True

@@ -32,7 +32,6 @@ class AwsBucket(AwsElement):
         #  TODO:     "IntelligentTieringConfigurations" : [ IntelligentTieringConfiguration, ... ],
         #  TODO:     "InventoryConfigurations" : [ InventoryConfiguration, ... ],
         #  TODO:     "LifecycleConfiguration" : LifecycleConfiguration,
-        #  TODO:     "LoggingConfiguration" : LoggingConfiguration,
         #  TODO:     "MetricsConfigurations" : [ MetricsConfiguration, ... ],
         #  TODO:     "NotificationConfiguration" : NotificationConfiguration,
         #  TODO:     "OwnershipControls" : OwnershipControls,
@@ -119,6 +118,29 @@ class AwsBucket(AwsElement):
         # The (Calculated) name
         self._element["BucketName"] = {"Fn::Sub": self.calculate_bucket_name()}
 
+        # Logging configuration
+        lcfg = self.wrap_call(s3.get_bucket_logging)
+        if lcfg:
+            if "LoggingEnabled" in lcfg:
+                lcfg = lcfg["LoggingEnabled"]
+                self._element["LoggingConfiguration"] = {}
+                if "TargetPrefix" in lcfg:
+                    self._element["LoggingConfiguration"]["LogFilePrefix"] = lcfg["TargetPrefix"]
+                if "TargetBucket" in lcfg:
+                    if lcfg["TargetBucket"] == self.physical_id:
+                        dst_bucket = self
+                    else:
+                        dst_bucket = self._environment.find_by_physical_id(lcfg["TargetBucket"])
+                        if dst_bucket is None:
+                            dst_bucket = AwsBucket(self._environment, lcfg["TargetBucket"])
+                        self._environment.add_to_todo(dst_bucket)
+                        self.add_dependency(dst_bucket)
+
+                    self._element["LoggingConfiguration"]["DestinationBucketName"] = {
+                        "Fn::Sub": dst_bucket.calculate_bucket_name()
+                    }
+                    dst_bucket._element["AccessControl"] = "LogDeliveryWrite"
+
         # Object Lock Configuration
         olc = self.wrap_call(s3.get_object_lock_configuration)
         if olc and olc["ObjectLockConfiguration"]["ObjectLockEnabled"] == "Enabled":
@@ -139,7 +161,7 @@ class AwsBucket(AwsElement):
         accc = self.wrap_call(s3.get_bucket_versioning)
         if accc and "Status" in accc:
             self._element["VersioningConfiguration"] = {
-                "VersioningStatus": accc["Status"]
+                "Status": accc["Status"]
             }
             if "MFADelete" in accc and accc["MFADelete"] == "Enabled":
                 self._environment.add_warning("MFA Delete cannot be enabled using CFN.", self.physical_id)
@@ -166,5 +188,6 @@ class AwsBucket(AwsElement):
         return result
 
     def calculate_bucket_name(self):
-        return "${AWS::StackName}-${AWS::AccountId}-${AWS::Region}-" + self.physical_id
+        return self.make_unique(self.physical_id, lower=True)
+        #"${AWS::StackName}-${AWS::AccountId}-${AWS::Region}-" + self.physical_id
 

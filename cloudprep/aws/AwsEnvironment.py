@@ -13,10 +13,10 @@ class AwsEnvironment:
         # First, look through the existing resources; then scan those still to do.
         if needle in self.resources:
             return self.resources[needle]
-        #
-        # for task in self._todo:
-        #     if task.get_physical_id() == needle:
-        #         return task
+
+        for task in self._todo:
+            if task.physical_id == needle:
+                return task
 
         return None
 
@@ -24,22 +24,24 @@ class AwsEnvironment:
         for physical_id, candidate in self.resources.items():
             if candidate.logical_id == needle:
                 return candidate
+
+        for task in self._todo:
+            if task.logical_id == needle:
+                return task
+
         return None
 
     def logical_from_physical(self, needle):
         return self.find_by_physical_id(needle).logical_id
 
     def add_to_todo(self, element):
-        self._todo.append(element)
+        # Only insert it if we haven't already registered it.
+        if self.find_by_physical_id(element.physical_id) is None:
+            self._todo.append(element)
 
     def get_next_todo(self):
         if len(self._todo) > 0:
             candidate = self._todo[0]
-            # Have we already done so? If so remove and revisit
-            if self.find_by_physical_id(candidate.physical_id) is not None:
-                self.remove_from_todo(candidate)
-                return self.get_next_todo()
-
             return candidate
         else:
             return None
