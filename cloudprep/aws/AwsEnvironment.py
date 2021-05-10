@@ -7,6 +7,7 @@ class AwsEnvironment:
         self.mappings = {}
 
         self._todo = []
+        self._warnings = []
 
     def find_by_physical_id(self, needle):
         # First, look through the existing resources; then scan those still to do.
@@ -67,3 +68,6 @@ class AwsEnvironment:
             kwargs["Type"] = "String"
 
         self.parameters[name] = kwargs
+
+    def add_warning(self, message, resource_physical_id):
+        self._warnings.append("Warning: {0} on {1}".format(message, resource_physical_id))

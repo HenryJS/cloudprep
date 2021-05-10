@@ -55,3 +55,8 @@ if options.bucket:
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)
 renderer.render()
+
+if environment._warnings:
+    print("Warnings:", file=sys.stderr)
+    for warning in environment._warnings:
+        print(warning, file=sys.stderr)

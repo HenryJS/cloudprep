@@ -37,7 +37,6 @@ class AwsBucket(AwsElement):
         #  TODO:     "NotificationConfiguration" : NotificationConfiguration,
         #  TODO:     "OwnershipControls" : OwnershipControls,
         #  TODO:     "ReplicationConfiguration" : ReplicationConfiguration,
-        #  TODO:     "VersioningConfiguration" : VersioningConfiguration,
         #  TODO:     "WebsiteConfiguration" : WebsiteConfiguration
         # }
 
@@ -78,6 +77,15 @@ class AwsBucket(AwsElement):
         tagging = self.wrap_call(s3.get_bucket_tagging)
         if tagging:
             self._tags.from_api_result(tagging["TagSet"])
+
+        # Versioning
+        accc = self.wrap_call(s3.get_bucket_versioning)
+        if accc and "Status" in accc:
+            self._element["VersioningConfiguration"] = {
+                "VersioningStatus": accc["Status"]
+            }
+            if "MFADelete" in accc and accc["MFADelete"] == "Enabled":
+                self._environment.add_warning("MFA Delete cannot be enabled using CFN.", self.physical_id)
 
         # Do we have a policy?
         bucket_policy = self.wrap_call(s3.get_bucket_policy)
