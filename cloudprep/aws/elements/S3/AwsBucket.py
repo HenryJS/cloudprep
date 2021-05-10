@@ -1,6 +1,7 @@
 import boto3
 import botocore.exceptions
 import sys
+from ..AwsARN import AwsARN
 from .AwsBucketPolicy import AwsBucketPolicy
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
@@ -27,7 +28,6 @@ class AwsBucket(AwsElement):
         s3 = boto3.client("s3")
         # {
         #  TODO:     "AccessControl" : String,
-        #  TODO:     "AnalyticsConfigurations" : [ AnalyticsConfiguration, ... ],
         #  TODO:     "CorsConfiguration" : CorsConfiguration,
         #  TODO:     "IntelligentTieringConfigurations" : [ IntelligentTieringConfiguration, ... ],
         #  TODO:     "InventoryConfigurations" : [ InventoryConfiguration, ... ],
@@ -51,6 +51,60 @@ class AwsBucket(AwsElement):
                 "AccelerationStatus": accc["Status"]
             }
 
+        # Analytics Configurations
+        analy_set = s3.list_bucket_analytics_configurations(**self._bucket_filter)
+        if "AnalyticsConfigurationList" in analy_set:
+            a_cfgs = []
+            for analy_config in analy_set["AnalyticsConfigurationList"]:
+                cfg = {"Id": analy_config["Id"] }
+
+                if "Prefix" in analy_config :
+                    cfg["Prefix"] = analy_config["Prefix"]
+
+                # Filters are moderately complicated.
+                if "Filter" in analy_config:
+                    # Case 1: Tag alone (and singular)
+                    if "Tag" in analy_config["Filter"]:
+                        cfg["TagFilters"] = [ analy_config["Filter"]["Tag"] ]
+                    # Case 2: Prefix alone
+                    elif "Prefix" in analy_config["Filter"]:
+                        cfg["Prefix"] = analy_config["Filter"]["Prefix"]
+                    # Case 3: Multiple
+                    elif "And" in analy_config["Filter"]:
+                        if "Tags" in analy_config["Filter"]["And"]:
+                            cfg["TagFilters"] = analy_config["Filter"]["And"]["Tags"]
+                        if "Prefix" in analy_config["Filter"]["And"]:
+                            cfg["Prefix"] = analy_config["Filter"]["And"]["Prefix"]
+
+                # StorageClassAnalysis is rather more complicated.
+                cfg["StorageClassAnalysis"] = {}
+                if "DataExport" in analy_config["StorageClassAnalysis"]:
+                    src = analy_config["StorageClassAnalysis"]["DataExport"]
+                    dst_dx = {
+                        "OutputSchemaVersion": src["OutputSchemaVersion"],
+                        "Destination": {}
+                    }
+                    src = src["Destination"]["S3BucketDestination"]
+
+                    dst_dx["Destination"]["Format"] = src["Format"]
+
+                    dst_arn = AwsARN(src["Bucket"])
+                    dst_bucket = AwsBucket(self._environment, dst_arn.resource_id)
+                    self._environment.add_to_todo(dst_bucket)
+                    dst_dx["Destination"]["BucketArn"] = {"Fn::Sub": "arn:aws:s3:::" + dst_bucket.calculate_bucket_name()}
+
+                    if "BucketAccountId" in src:
+                        dst_dx["Destination"]["BucketAccountId"] = src["BucketAccountId"]
+                    else:
+                        dst_dx["Destination"]["BucketAccountId"] = {"Fn::Sub": "${AWS::AccountId}"}
+                    if "Prefix" in src:
+                        dst_dx["Destination"]["Prefix"] = src["Prefix"]
+
+                    cfg["StorageClassAnalysis"]["DataExport"] = dst_dx
+
+                a_cfgs.append(cfg)
+            self._element["AnalyticsConfigurations"] = a_cfgs
+
         # Bucket Z
         # TODO: KMS Keys
         bz = self.wrap_call(s3.get_bucket_encryption)
@@ -62,13 +116,16 @@ class AwsBucket(AwsElement):
                 "ServerSideEncryptionConfiguration": bz["ServerSideEncryptionConfiguration"]["Rules"]
             }
 
+        # The (Calculated) name
+        self._element["BucketName"] = {"Fn::Sub": self.calculate_bucket_name()}
+
         # Object Lock Configuration
         olc = self.wrap_call(s3.get_object_lock_configuration)
         if olc and olc["ObjectLockConfiguration"]["ObjectLockEnabled"] == "Enabled":
                 self._element["ObjectLockEnabled"] = True
                 self._element["ObjectLockConfiguration"] = olc["ObjectLockConfiguration"]
 
-        # Public Acces Block configuration
+        # Public Access Block configuration
         pabc = self.wrap_call(s3.get_public_access_block)
         if pabc:
             self._element["PublicAccessBlockConfiguration"] = pabc["PublicAccessBlockConfiguration"]
@@ -91,7 +148,12 @@ class AwsBucket(AwsElement):
         bucket_policy = self.wrap_call(s3.get_bucket_policy)
         if bucket_policy:
             self._environment.add_to_todo(
-                AwsBucketPolicy(self._environment, bucket_name=self.physical_id, policy_data=bucket_policy["Policy"])
+                AwsBucketPolicy(
+                    self._environment,
+                    original_bucket=self.physical_id,
+                    bucket_name=self.calculate_bucket_name(),
+                    policy_data=bucket_policy["Policy"]
+                )
             )
 
         self.is_valid = True
@@ -102,3 +164,7 @@ class AwsBucket(AwsElement):
         except Exception as e:
             return None
         return result
+
+    def calculate_bucket_name(self):
+        return "${AWS::StackName}-${AWS::AccountId}-${AWS::Region}-" + self.physical_id
+
