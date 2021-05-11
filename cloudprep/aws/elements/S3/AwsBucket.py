@@ -189,5 +189,4 @@ class AwsBucket(AwsElement):
 
     def calculate_bucket_name(self):
         return self.make_unique(self.physical_id, lower=True)
-        #"${AWS::StackName}-${AWS::AccountId}-${AWS::Region}-" + self.physical_id
 
