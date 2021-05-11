@@ -21,6 +21,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::VPCEndpoint
 * AWS::IAM::ManagedPolicy
 * AWS::IAM::Role
+* AWS::S3::BucketPolicy
 
 
 ### Partial Support
@@ -39,6 +40,8 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
     always require a manual step.
 * AWS::EC2::Lambda
   * Basic functionality is there; Lambdas are *complicated*. 
+* AWS::S3::Bucket
+  * Buckets are really complex. Currently versioning, policies, logging, acceleration and encryption are supported.
 
 ### Notes
 * **RouteTables, NetworkACLs and SecurityGroups**: 
@@ -62,7 +65,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 ```commandline
 $ ./cloudprep --llambda IsTheSkyRedLambda > skyredlambda.json
 $ aws s3 mb s3://is-the-sky-red-artefacts
-$ aws s3 syn artefacts/ s3://is-the-sky-red-artefacts
+$ aws s3 sync artefacts/ s3://is-the-sky-red-artefacts
 $ aws cloudformation deploy \
     --template-file skyredlambda.json \
     --stack-name IsTheSkyRed2 \
