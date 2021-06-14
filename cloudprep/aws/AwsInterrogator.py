@@ -55,10 +55,10 @@ class AwsInterrogator:
         if kms_key is True:
             response = kms.list_keys()
             for key in response["Keys"]:
-                self._environment.add_to_todo(AwsKmsKey(self._environment, key["KeyId"]))
+                self._environment.add_to_todo(AwsKmsKey(self._environment, key["KeyId"], KmsAliasCreator=AwsKmsAlias))
         else:
             arn = AwsARN(kms_key)
-            self._environment.add_to_todo(AwsKmsKey(self._environment, arn.resource_id))
+            self._environment.add_to_todo(AwsKmsKey(self._environment, arn.resource_id, KmsAliasCreator=AwsKmsAlias))
 
     def start_kms_alias(self, kms_alias):
         self._environment.add_to_todo(AwsKmsAlias(self._environment, kms_alias))

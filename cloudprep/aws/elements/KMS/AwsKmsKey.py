@@ -1,3 +1,5 @@
+import sys
+
 import boto3
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
@@ -6,6 +8,15 @@ from cloudprep.aws.elements.TagSet import TagSet
 class AwsKmsKey(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__(environment, "AWS::KMS::Key", physical_id, **kwargs)
+        if "KmsAlias" in kwargs:
+            self._kms_alias = kwargs["KmsAlias"]
+        else:
+            self._kms_alias = None
+        if "KmsAliasCreator" in kwargs:
+            self._kms_alias_creator = kwargs["KmsAliasCreator"]
+        else:
+            self._kms_alias_creator = None
+        print(kwargs,file=sys.stderr)
         self.set_defaults({
             "Enabled": True,
             "KeySpec": "SYMMETRIC_DEFAULT",
@@ -41,7 +52,16 @@ class AwsKmsKey(AwsElement):
 
         self._tags.from_api_result(kms.list_resource_tags(KeyId=self.physical_id)["Tags"])
 
+        if self._kms_alias is None:
+            self.check_for_aliases(kms)
+
         self.is_valid = True
+
+    def check_for_aliases(self, kms):
+        for page in  kms.get_paginator('list_aliases').paginate():
+            for alias in page["Aliases"]:
+                if "TargetKeyId" in alias and alias["TargetKeyId"] == self.physical_id:
+                    self._environment.add_to_todo(self._kms_alias_creator(self._environment, alias["AliasName"]))
 
     def default_kms_policy(self):
         return {
