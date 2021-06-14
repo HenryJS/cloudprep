@@ -62,18 +62,7 @@ class AwsBucket(AwsElement):
 
                 # Filters are moderately complicated.
                 if "Filter" in analy_config:
-                    # Case 1: Tag alone (and singular)
-                    if "Tag" in analy_config["Filter"]:
-                        cfg["TagFilters"] = [ analy_config["Filter"]["Tag"] ]
-                    # Case 2: Prefix alone
-                    elif "Prefix" in analy_config["Filter"]:
-                        cfg["Prefix"] = analy_config["Filter"]["Prefix"]
-                    # Case 3: Multiple
-                    elif "And" in analy_config["Filter"]:
-                        if "Tags" in analy_config["Filter"]["And"]:
-                            cfg["TagFilters"] = analy_config["Filter"]["And"]["Tags"]
-                        if "Prefix" in analy_config["Filter"]["And"]:
-                            cfg["Prefix"] = analy_config["Filter"]["And"]["Prefix"]
+                    self.digest_filters(analy_config["Filter"], cfg)
 
                 # StorageClassAnalysis is rather more complicated.
                 cfg["StorageClassAnalysis"] = {}
@@ -115,31 +104,14 @@ class AwsBucket(AwsElement):
                 "ServerSideEncryptionConfiguration": bz["ServerSideEncryptionConfiguration"]["Rules"]
             }
 
-        # The (Calculated) name
-        self._element["BucketName"] = {"Fn::Sub": self.calculate_bucket_name()}
+        # The (Calculated) name, which is entirely optional.
+        # self._element["BucketName"] = {"Fn::Sub": self.calculate_bucket_name()}
+
+        # Lifecycle
+        self.process_lifecycle_configuration(self.wrap_call(s3.get_bucket_lifecycle_configuration))
 
         # Logging configuration
-        lcfg = self.wrap_call(s3.get_bucket_logging)
-        if lcfg:
-            if "LoggingEnabled" in lcfg:
-                lcfg = lcfg["LoggingEnabled"]
-                self._element["LoggingConfiguration"] = {}
-                if "TargetPrefix" in lcfg:
-                    self._element["LoggingConfiguration"]["LogFilePrefix"] = lcfg["TargetPrefix"]
-                if "TargetBucket" in lcfg:
-                    if lcfg["TargetBucket"] == self.physical_id:
-                        dst_bucket = self
-                    else:
-                        dst_bucket = self._environment.find_by_physical_id(lcfg["TargetBucket"])
-                        if dst_bucket is None:
-                            dst_bucket = AwsBucket(self._environment, lcfg["TargetBucket"])
-                        self._environment.add_to_todo(dst_bucket)
-                        self.add_dependency(dst_bucket)
-
-                    self._element["LoggingConfiguration"]["DestinationBucketName"] = {
-                        "Fn::Sub": dst_bucket.calculate_bucket_name()
-                    }
-                    dst_bucket._element["AccessControl"] = "LogDeliveryWrite"
+        self.process_logging_configuration(self.wrap_call(s3.get_bucket_logging))
 
         # Object Lock Configuration
         olc = self.wrap_call(s3.get_object_lock_configuration)
@@ -180,6 +152,100 @@ class AwsBucket(AwsElement):
 
         self.is_valid = True
 
+    def digest_filters(self, filter, target):
+        # Filters are moderately complicated.
+        # Case 1: Tag alone (and singular)
+        if "Tag" in filter:
+            target["TagFilters"] = [filter["Tag"]]
+
+        # Case 2: Prefix alone
+        elif "Prefix" in filter:
+            target["Prefix"] = filter["Prefix"]
+
+        # Case 3: Multiple
+        elif "And" in filter:
+            if "Tags" in filter["And"]:
+                target["TagFilters"] = filter["And"]["Tags"]
+
+            if "Prefix" in filter["And"]:
+                target["Prefix"] = filter["And"]["Prefix"]
+
+
+    def process_lifecycle_configuration(self, config):
+        if config is None:
+            return
+        rules = []
+
+        for rule in config["Rules"]:
+            this_rule = {}
+            if "AbortIncompleteMultipartUpload" in rule:
+                this_rule["AbortIncompleteMultipartUpload"] = rule["AbortIncompleteMultipartUpload"]
+
+            if "Expiration" in rule:
+                if "Days" in rule["Expiration"]:
+                    this_rule["ExpirationInDays"] = rule["Expiration"]["Days"]
+                elif "ExpiredObjectDeleteMarker" in rule["Expiration"]:
+                    this_rule["ExpiredObjectDeleteMarker"] = True
+                elif "Date" in rule["Expiration"]:
+                    this_rule["ExpirationDate"] = rule["Expiration"]["Date"]
+
+            if "NoncurrentVersionExpiration" in rule:
+                this_rule["NoncurrentVersionExpirationInDays"] = rule["NoncurrentVersionExpiration"]["NoncurrentDays"]
+
+            if "NoncurrentVersionTransitions" in rule:
+                this_rule["NoncurrentVersionTransitions"] = [{
+                        "StorageClass": x["StorageClass"],
+                        "TransitionInDays": x["NoncurrentDays"]
+                    }
+                    for x in rule["NoncurrentVersionTransitions"]
+                ]
+
+            if "Filter" in rule:
+                self.digest_filters(rule["Filter"], this_rule)
+
+            this_rule["Status"] = rule["Status"]
+
+            if "Transitions" in rule:
+                txs = []
+                for t in rule["Transitions"]:
+                    tx = { "StorageClass": t["StorageClass"] }
+                    if "Days" in t:
+                        tx["TransitionInDays"] = t["Days"]
+                    if "Date" in t:
+                        tx["TransitionDate"] = t["Date"]
+                    txs.append(tx)
+                this_rule["Transitions"] = txs
+
+            rules.append(this_rule)
+
+        if rules:
+            self._element["LifecycleConfiguration"] = {
+                "Rules": rules
+            }
+
+    def process_logging_configuration(self, lcfg):
+        if not lcfg:
+            return
+        if "LoggingEnabled" in lcfg:
+            lcfg = lcfg["LoggingEnabled"]
+            self._element["LoggingConfiguration"] = {}
+            if "TargetPrefix" in lcfg:
+                self._element["LoggingConfiguration"]["LogFilePrefix"] = lcfg["TargetPrefix"]
+            if "TargetBucket" in lcfg:
+                if lcfg["TargetBucket"] == self.physical_id:
+                    dst_bucket = self
+                else:
+                    dst_bucket = self._environment.find_by_physical_id(lcfg["TargetBucket"])
+                    if dst_bucket is None:
+                        dst_bucket = AwsBucket(self._environment, lcfg["TargetBucket"])
+                    self._environment.add_to_todo(dst_bucket)
+                    self.add_dependency(dst_bucket)
+
+                self._element["LoggingConfiguration"]["DestinationBucketName"] = {
+                    "Fn::Sub": dst_bucket.calculate_bucket_name()
+                }
+                dst_bucket._element["AccessControl"] = "LogDeliveryWrite"
+
     def wrap_call(self, call):
         try:
             result = call(**(self._bucket_filter))
@@ -189,4 +255,3 @@ class AwsBucket(AwsElement):
 
     def calculate_bucket_name(self):
         return self.make_unique(self.physical_id, lower=True)
-
