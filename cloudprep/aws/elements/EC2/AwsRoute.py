@@ -41,6 +41,7 @@ class AwsRoute(AwsElement):
         ]:
             if target_id_key in source_data:
                 assoc_prefix = source_data[target_id_key].split("-")[0]
+                print(source_data[target_id_key], target_id_key, file=sys.stderr)
                 kwargs = { "environment": self._environment, "physical_id": source_data[target_id_key], "route": self}
                 target = RouteTargetBuilder.find_route_target(assoc_prefix, **kwargs )
 
