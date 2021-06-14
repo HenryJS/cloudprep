@@ -5,6 +5,8 @@ from .elements.EC2.AwsVpc import AwsVpc
 from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .elements.IAM.AwsRole import AwsRole
 from .elements.S3.AwsBucket import AwsBucket
+from .elements.KMS.AwsKmsKey import AwsKmsKey
+from .elements.KMS.AwsKmsAlias import AwsKmsAlias
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
 from .AwsEnvironment import AwsEnvironment
@@ -47,6 +49,19 @@ class AwsInterrogator:
                 self._environment.add_to_todo(AwsBucket(self._environment, bucket["Name"]))
         else:
             self._environment.add_to_todo(AwsBucket(self._environment, bucket_name))
+
+    def start_kms_key(self, kms_key):
+        kms = boto3.client("kms")
+        if kms_key is True:
+            response = kms.list_keys()
+            for key in response["Keys"]:
+                self._environment.add_to_todo(AwsKmsKey(self._environment, key["KeyId"]))
+        else:
+            arn = AwsARN(kms_key)
+            self._environment.add_to_todo(AwsKmsKey(self._environment, arn.resource_id))
+
+    def start_kms_alias(self, kms_alias):
+        self._environment.add_to_todo(AwsKmsAlias(self._environment, kms_alias))
 
     def interrogate(self):
         more_work = True

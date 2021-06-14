@@ -73,6 +73,10 @@ $ aws cloudformation deploy \
     --parameter ArtefactBucket=is-the-sky-red-artefacts
 ```
 
+* **KMS**
+  * KMS Keys will be created.  Policies get very interdependent so for now a standard default policy is created and the
+    Administrator's ARN is required as a parameter.
+    
 ### Limitations
 
 * **Route**: Only a subset of Route targets is supported.  These are:
@@ -121,6 +125,12 @@ $ ./cloudprep.py --llambda [ <lambda ARN> ] > my_lambda.json
 
 ```commandline
 $ ./cloudprep.py --role <role ARN> > my_role.json
+```
+
+* Interrogate a given KMS Key/s (the ARN is optional):
+
+```commandline
+$ ./cloudprep.py --kms-key [ <key ARN> ] > my_key.json
 ```
 
 This will take the default profile's credentials and examine the default profile's region for VPCs.  It'll then follow
