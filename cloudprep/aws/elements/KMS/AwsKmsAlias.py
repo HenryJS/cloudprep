@@ -1,7 +1,6 @@
 import boto3
 from .AwsKmsKey import AwsKmsKey
 from cloudprep.aws.elements.AwsElement import AwsElement
-from cloudprep.aws.elements.TagSet import TagSet
 
 
 class AwsKmsAlias(AwsElement):
@@ -28,7 +27,7 @@ class AwsKmsAlias(AwsElement):
 
         self._element["AliasName"] = {"Fn::Sub": "alias/" + self.make_unique(source_data["AliasName"][6:])}
 
-        key = AwsKmsKey(self._environment, source_data["TargetKeyId"])
+        key = AwsKmsKey(self._environment, source_data["TargetKeyId"], KmsAlias=self)
         self._environment.add_to_todo(key)
         self._element["TargetKeyId"] = key.make_getatt("Arn")
 
