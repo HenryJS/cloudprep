@@ -2,6 +2,7 @@ import boto3
 import botocore.exceptions
 import sys
 from ..AwsARN import AwsARN
+from ..KMS.AwsKmsKey import AwsKmsKey
 from .AwsBucketPolicy import AwsBucketPolicy
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
@@ -94,16 +95,22 @@ class AwsBucket(AwsElement):
             self._element["AnalyticsConfigurations"] = a_cfgs
 
         # Bucket Z
-        # TODO: KMS Keys
         bz = self.wrap_call(s3.get_bucket_encryption)
         if bz:
             for rule in bz["ServerSideEncryptionConfiguration"]["Rules"]:
                 rule["ServerSideEncryptionByDefault"] = rule["ApplyServerSideEncryptionByDefault"]
                 del rule["ApplyServerSideEncryptionByDefault"]
                 if "KMSMasterKeyID" in rule["ServerSideEncryptionByDefault"]:
-                    # TODO: KMS Key
-                    self._environment.add_warning("NEED TO CREATE A KMS KEY", self.physical_id)
-                    rule["ServerSideEncryptionByDefault"]["KMSMasterKeyID"] = "Arn-goe-here"
+                    kms_id = rule["ServerSideEncryptionByDefault"]["KMSMasterKeyID"]
+                    # Using exceptions for flow control is poor practice but it'll do.  Sorry.
+                    try:
+                        arn = AwsARN(kms_id)
+                        kms_id = arn.resource_id
+                    except Exception as e:
+                        pass
+                    key = AwsKmsKey(self._environment, kms_id)
+                    self._environment.add_to_todo(key)
+                    rule["ServerSideEncryptionByDefault"]["KMSMasterKeyID"] = key.make_getatt("Arn")
             self._element["BucketEncryption"] = {
                 "ServerSideEncryptionConfiguration": bz["ServerSideEncryptionConfiguration"]["Rules"]
             }
