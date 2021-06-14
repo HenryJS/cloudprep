@@ -3,6 +3,7 @@ import botocore.exceptions
 import sys
 from ..AwsARN import AwsARN
 from ..KMS.AwsKmsKey import AwsKmsKey
+from ..KMS.AwsKmsAlias import AwsKmsAlias
 from .AwsBucketPolicy import AwsBucketPolicy
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
@@ -32,7 +33,6 @@ class AwsBucket(AwsElement):
         #  TODO:     "CorsConfiguration" : CorsConfiguration,
         #  TODO:     "IntelligentTieringConfigurations" : [ IntelligentTieringConfiguration, ... ],
         #  TODO:     "InventoryConfigurations" : [ InventoryConfiguration, ... ],
-        #  TODO:     "LifecycleConfiguration" : LifecycleConfiguration,
         #  TODO:     "MetricsConfigurations" : [ MetricsConfiguration, ... ],
         #  TODO:     "NotificationConfiguration" : NotificationConfiguration,
         #  TODO:     "OwnershipControls" : OwnershipControls,
@@ -108,7 +108,7 @@ class AwsBucket(AwsElement):
                         kms_id = arn.resource_id
                     except Exception as e:
                         pass
-                    key = AwsKmsKey(self._environment, kms_id)
+                    key = AwsKmsKey(self._environment, kms_id, KmsAliasCreator=AwsKmsAlias)
                     self._environment.add_to_todo(key)
                     rule["ServerSideEncryptionByDefault"]["KMSMasterKeyID"] = key.make_getatt("Arn")
             self._element["BucketEncryption"] = {
@@ -156,7 +156,7 @@ class AwsBucket(AwsElement):
                 AwsBucketPolicy(
                     self._environment,
                     original_bucket=self.physical_id,
-                    bucket_name=self.calculate_bucket_name(),
+                    bucket=self,
                     policy_data=bucket_policy["Policy"]
                 )
             )
@@ -249,12 +249,10 @@ class AwsBucket(AwsElement):
                     dst_bucket = self._environment.find_by_physical_id(lcfg["TargetBucket"])
                     if dst_bucket is None:
                         dst_bucket = AwsBucket(self._environment, lcfg["TargetBucket"])
-                    self._environment.add_to_todo(dst_bucket)
-                    self.add_dependency(dst_bucket)
+                        self._environment.add_to_todo(dst_bucket)
+                    # self.add_dependency(dst_bucket)
 
-                self._element["LoggingConfiguration"]["DestinationBucketName"] = {
-                    "Fn::Sub": dst_bucket.calculate_bucket_name()
-                }
+                self._element["LoggingConfiguration"]["DestinationBucketName"] = dst_bucket.make_reference()
                 dst_bucket._element["AccessControl"] = "LogDeliveryWrite"
 
     def wrap_call(self, call):

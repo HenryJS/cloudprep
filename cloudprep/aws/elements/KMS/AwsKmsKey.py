@@ -16,7 +16,7 @@ class AwsKmsKey(AwsElement):
             self._kms_alias_creator = kwargs["KmsAliasCreator"]
         else:
             self._kms_alias_creator = None
-        print(kwargs,file=sys.stderr)
+
         self.set_defaults({
             "Enabled": True,
             "KeySpec": "SYMMETRIC_DEFAULT",
