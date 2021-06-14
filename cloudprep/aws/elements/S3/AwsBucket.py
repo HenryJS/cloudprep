@@ -100,6 +100,10 @@ class AwsBucket(AwsElement):
             for rule in bz["ServerSideEncryptionConfiguration"]["Rules"]:
                 rule["ServerSideEncryptionByDefault"] = rule["ApplyServerSideEncryptionByDefault"]
                 del rule["ApplyServerSideEncryptionByDefault"]
+                if "KMSMasterKeyID" in rule["ServerSideEncryptionByDefault"]:
+                    # TODO: KMS Key
+                    self._environment.add_warning("NEED TO CREATE A KMS KEY", self.physical_id)
+                    rule["ServerSideEncryptionByDefault"]["KMSMasterKeyID"] = "Arn-goe-here"
             self._element["BucketEncryption"] = {
                 "ServerSideEncryptionConfiguration": bz["ServerSideEncryptionConfiguration"]["Rules"]
             }
