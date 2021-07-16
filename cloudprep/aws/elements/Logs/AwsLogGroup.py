@@ -5,8 +5,9 @@ import boto3
 
 
 class AwsLogGroup(AwsElement):
-    def __init__(self, environment, physical_id, **kwargs):
-        super().__init__(environment, "AWS::Logs::LogGroup", physical_id, **kwargs)
+    def __init__(self, environment, arn, **kwargs):
+        self._arn = arn
+        super().__init__(environment, "AWS::Logs::LogGroup", arn.resource_id, **kwargs)
         self.set_defaults({})
 
     @AwsElement.capture_method
@@ -14,12 +15,13 @@ class AwsLogGroup(AwsElement):
         logs = boto3.client("logs")
 
         source_data = None
-        matches = logs.describe_log_groups(logGroupNamePrefix=self.physical_id)["logGroups"]
+        prefix = "{}/{}".format(self._arn.resource_path, self._arn.resource_id)
+        matches = logs.describe_log_groups(logGroupNamePrefix=prefix)["logGroups"]
         for match in matches:
-            if match["logGroupName"] == self.physical_id:
+            if match["logGroupName"] == prefix:
                 source_data = match
         if source_data is None:
-            raise Exception("Couldn't find LogGroup matching " + self.physical_id)
+            raise Exception("Couldn't find LogGroup matching " + prefix)
 
         self._element["RetentionInDays"] = source_data["retentionInDays"]
         #  TODO:       "KmsKeyId": String,

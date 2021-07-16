@@ -5,21 +5,24 @@ class AwsARN:
         if len(components) == 7:
             _type, self._partition, self._service, self._region, \
                 self._account, self._resource_type, self._resource_id = components
+            self._resource_path = None
+            self._inner_resource = None
             self._format = 1
+
         elif len(components) == 6:
             _type, self._partition, self._service, self._region, \
                 self._account, resource = components
+            self._resource_path = None
+            self._resource_type = None
+            self._inner_resource = None
 
             resource = resource.split("/")
             if len(resource) == 1:
-                self._resource_type = None
-                self._resource_path = None
                 self._resource_id = resource[0]
                 self._format = 2
 
             elif len(resource) == 2:
                 self._resource_type = resource[0]
-                self._resource_path = None
                 self._resource_id = resource[1]
                 self._format = 3
 
@@ -30,10 +33,13 @@ class AwsARN:
                 self._format = 4
 
         elif len(components) == 8:
-            # This probably only applies to LowGroup ARNs?
-            # arn:aws:logs:eu-west-2:368255555983:log-group:/aws/vendedlogs/states/HelloWorld-Logs:*
             _type, self._partition, self._service, self._region, \
-                self._account, self._resource_type, self._resource_id, self._inner_resource = components
+            self._account, self._resource_type, self._resource_id , self._inner_resource = components
+            slash_location = self._resource_id.rfind("/")
+
+            if slash_location > 0:
+                self._resource_path = self._resource_id[:slash_location]
+                self._resource_id = self._resource_id[slash_location+1:]
 
             self._format = 5
 
@@ -67,8 +73,20 @@ class AwsARN:
         else:
             raise Exception("Format {} not renderable".format(self._format))
 
-
         return response.replace("//","/")
+
+    def prettify(self):
+        response = "\n".join([
+            "Partition:      {}".format(self.partition),
+            "Service:        {}".format(self.service),
+            "Region:         {}".format(self.region),
+            "Account:        {}".format(self.account),
+            "Resource Type:  {}".format(self.resource_type),
+            "Resource Path:  {}".format(self.resource_path),
+            "Resource ID:    {}".format(self.resource_id),
+            "Inner Resource: {}".format(self.inner_resource)
+        ])
+        return response
 
     @property
     def partition(self):
