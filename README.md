@@ -21,6 +21,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 * AWS::EC2::VPCEndpoint
 * AWS::IAM::ManagedPolicy
 * AWS::IAM::Role
+* AWS::S3::BucketPolicy
 
 
 ### Partial Support
@@ -39,6 +40,8 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
     always require a manual step.
 * AWS::EC2::Lambda
   * Basic functionality is there; Lambdas are *complicated*. 
+* AWS::S3::Bucket
+  * Buckets are really complex. Currently versioning, policies, logging, acceleration and encryption are supported.
 
 ### Notes
 * **RouteTables, NetworkACLs and SecurityGroups**: 
@@ -62,7 +65,7 @@ CloudPrep is a tool for taking an existing cloud environment and translating int
 ```commandline
 $ ./cloudprep --llambda IsTheSkyRedLambda > skyredlambda.json
 $ aws s3 mb s3://is-the-sky-red-artefacts
-$ aws s3 syn artefacts/ s3://is-the-sky-red-artefacts
+$ aws s3 sync artefacts/ s3://is-the-sky-red-artefacts
 $ aws cloudformation deploy \
     --template-file skyredlambda.json \
     --stack-name IsTheSkyRed2 \
@@ -70,6 +73,10 @@ $ aws cloudformation deploy \
     --parameter ArtefactBucket=is-the-sky-red-artefacts
 ```
 
+* **KMS**
+  * KMS Keys will be created.  Policies get very interdependent so for now a standard default policy is created and the
+    Administrator's ARN is required as a parameter.
+    
 ### Limitations
 
 * **Route**: Only a subset of Route targets is supported.  These are:
@@ -118,6 +125,12 @@ $ ./cloudprep.py --llambda [ <lambda ARN> ] > my_lambda.json
 
 ```commandline
 $ ./cloudprep.py --role <role ARN> > my_role.json
+```
+
+* Interrogate a given KMS Key/s (the ARN is optional):
+
+```commandline
+$ ./cloudprep.py --kms-key [ <key ARN> ] > my_key.json
 ```
 
 This will take the default profile's credentials and examine the default profile's region for VPCs.  It'll then follow

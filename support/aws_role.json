@@ -59,6 +59,9 @@
                 "iam:GetPolicyVersion",
                 "iam::ListRolePolicies",
                 "iam::GetRolePolicy",
+                "s3:ListBuckets",
+                "s3:GetBucketTagging",
+                "s3:GetBucketPolicy",
                 "cloudformation:DescribeStacks",
                 "cloudformation:GetTemplateSummary",
                 "cloudformation:CreateChangeSet"

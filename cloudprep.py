@@ -36,6 +36,31 @@ parser.add_argument(
     default=False,
     nargs="?",
     help='Interrogate Step Function(s)')
+parser.add_argument(
+    '--bucket',
+    action='store',
+    dest="bucket",
+    const=True,
+    default=False,
+    nargs="?",
+    help='Interrogate Bucket(s)')
+parser.add_argument(
+    '--kms-key',
+    action='store',
+    dest="kms_key",
+    const=True,
+    default=False,
+    nargs="?",
+    help='Interrogate KMS Key(s)')
+parser.add_argument(
+    '--kms-alias',
+    action='store',
+    dest="kms_alias",
+    const=True,
+    default=False,
+    nargs="?",
+    help='Interrogate KMS Alias')
+
 options = parser.parse_args()
 
 interrogator = AwsInterrogator()
@@ -51,6 +76,20 @@ if options.role:
 if options.stepfn:
     interrogator.start_stepfn(options.stepfn)
 
+if options.bucket:
+    interrogator.start_bucket(options.bucket)
+
+if options.kms_key:
+    interrogator.start_kms_key(options.kms_key)
+
+if options.kms_alias:
+    interrogator.start_kms_alias(options.kms_alias)
+
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)
 renderer.render()
+
+if environment._warnings:
+    print("Warnings:", file=sys.stderr)
+    for warning in environment._warnings:
+        print(warning, file=sys.stderr)

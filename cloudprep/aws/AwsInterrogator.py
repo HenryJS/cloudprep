@@ -1,7 +1,12 @@
+import json
+
 import boto3
 from .elements.EC2.AwsVpc import AwsVpc
 from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .elements.IAM.AwsRole import AwsRole
+from .elements.S3.AwsBucket import AwsBucket
+from .elements.KMS.AwsKmsKey import AwsKmsKey
+from .elements.KMS.AwsKmsAlias import AwsKmsAlias
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
 from .elements.StepFunctions.AwsStateMachine import AwsStateMachine
@@ -47,6 +52,27 @@ class AwsInterrogator:
         else:
             self._environment.add_to_todo(AwsStateMachine(self._environment, AwsARN(stepfn)))
 
+    def start_bucket(self, bucket_name):
+        s3 = boto3.client("s3")
+        if bucket_name is True:
+            bucket_response = s3.list_buckets()
+            for bucket in bucket_response["Buckets"]:
+                self._environment.add_to_todo(AwsBucket(self._environment, bucket["Name"]))
+        else:
+            self._environment.add_to_todo(AwsBucket(self._environment, bucket_name))
+
+    def start_kms_key(self, kms_key):
+        kms = boto3.client("kms")
+        if kms_key is True:
+            response = kms.list_keys()
+            for key in response["Keys"]:
+                self._environment.add_to_todo(AwsKmsKey(self._environment, key["KeyId"], KmsAliasCreator=AwsKmsAlias))
+        else:
+            arn = AwsARN(kms_key)
+            self._environment.add_to_todo(AwsKmsKey(self._environment, arn.resource_id, KmsAliasCreator=AwsKmsAlias))
+
+    def start_kms_alias(self, kms_alias):
+        self._environment.add_to_todo(AwsKmsAlias(self._environment, kms_alias))
 
     def interrogate(self):
         more_work = True

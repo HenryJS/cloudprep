@@ -3,7 +3,8 @@ from .AwsVpcEndpoint import AwsVPCEndpoint
 from .AwsEgressOnlyInternetGateway import AwsEgressOnlyInternetGateway
 from .AwsNatGateway import AwsNatGateway
 from .AwsTransitGateway import AwsTransitGateway
-
+from .AwsVpnGateway import AwsVpnGateway
+from .AwsInstanceRouteTarget import AwsInstanceRouteTarget
 
 class RouteTargetBuilder:
 
@@ -14,6 +15,8 @@ class RouteTargetBuilder:
             "nat": AwsNatGateway,
             "eigw": AwsEgressOnlyInternetGateway,
             "tgw": AwsTransitGateway,
+            "vgw": AwsVpnGateway,
+            "eni": AwsInstanceRouteTarget
     }
 
     @staticmethod

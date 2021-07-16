@@ -1,5 +1,6 @@
 import sys
 import hashlib
+import re
 
 from ..AwsEnvironment import AwsEnvironment
 from .AwsARN import AwsARN
@@ -57,6 +58,8 @@ class AwsElement:
         return self._dependencies
 
     def add_dependency(self, new_dependency):
+        if isinstance(new_dependency, AwsElement):
+            new_dependency = new_dependency.logical_id
         if new_dependency not in self._dependencies:
             self._dependencies.append(new_dependency)
 
@@ -113,7 +116,7 @@ class AwsElement:
 
     @staticmethod
     def calculate_logical_id(physical_id):
-        return physical_id.replace("-", "").replace("/","")
+        return re.sub("\W", "", physical_id)
 
     def capture_method(f):
         def transformed_method(self):
@@ -141,7 +144,11 @@ class AwsElement:
     def create_from_arn(arn: AwsARN):
         return None
 
-    def make_unique(self, identifier):
-        return {
-            "Fn::Sub": "${AWS::StackName}-" + identifier + "-" + hashlib.md5(identifier.encode('utf-8')).hexdigest()[:8].upper()
-        }
+    def unique_ref(self, identifier, lower=False):
+        return {"Fn::Sub": self.make_unique(identifier, lower)}
+
+    def make_unique(self, identifier, lower=False):
+        if lower:
+            return "${AWS::StackName}-" + identifier + "-" + hashlib.md5(identifier.encode('utf-8')).hexdigest()[:8].lower()
+        else:
+            return "${AWS::StackName}-" + identifier + "-" + hashlib.md5(identifier.encode('utf-8')).hexdigest()[:8].upper()
