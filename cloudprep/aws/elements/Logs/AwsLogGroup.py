@@ -13,7 +13,7 @@ class AwsLogGroup(AwsElement):
     def capture(self):
         logs = boto3.client("logs")
 
-        source_data is None
+        source_data = None
         matches = logs.describe_log_groups(logGroupNamePrefix=self.physical_id)["logGroups"]
         for match in matches:
             if match["logGroupName"] == self.physical_id:

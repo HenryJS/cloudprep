@@ -35,32 +35,40 @@ class AwsARN:
             _type, self._partition, self._service, self._region, \
                 self._account, self._resource_type, self._resource_id, self._inner_resource = components
 
+            self._format = 5
+
         else:
             raise Exception("Unfamiliar format: {} has {} groups.".format(arn, len(components)))
 
     @property
     def text(self):
+        response = None
+
         if self._format == 1:
-            return ":".join([
+            response = ":".join([
                 "arn", self._partition, self._service, self._region, self._account,
                 self._resource_type, self._resource_id
             ])
         elif self._format == 2:
-            return ":".join([
+            response = ":".join([
                 "arn", self._partition, self._service, self._region, self._account,
                 self._resource_id
             ])
         elif self._format == 3:
-            return ":".join([
+            response = ":".join([
                 "arn", self._partition, self._service, self._region, self._account,
                 "/".join([self._resource_type, self._resource_id])
             ])
         elif self._format == 4:
-            return ":".join([
+            response = ":".join([
                 "arn", self._partition, self._service, self._region, self._account,
                 "/".join([self._resource_type, self._resource_path, self._resource_id])
             ])
+        else:
+            raise Exception("Format {} not renderable".format(self._format))
 
+
+        return response.replace("//","/")
 
     @property
     def partition(self):
