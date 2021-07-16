@@ -22,8 +22,13 @@ class TagSet:
     def from_api_result(self, api_result):
         if "Tags" in api_result:
             api_result = api_result["Tags"]
+        elif "tags" in api_result:
+            api_result = api_result["tags"]
+
         for tag in api_result:
             if "Key" in tag:
                 self.add_tag(tag["Key"], tag["Value"])
+            elif "key" in tag:
+                self.add_tag(tag["key"], tag["value"])
             else:
                 self.add_tag(tag, api_result[tag])

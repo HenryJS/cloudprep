@@ -28,6 +28,14 @@ parser.add_argument(
     action='store',
     dest="role",
     help='Interrogate Lambdas')
+parser.add_argument(
+    '--stepfn',
+    action='store',
+    dest="stepfn",
+    const=True,
+    default=False,
+    nargs="?",
+    help='Interrogate Step Function(s)')
 options = parser.parse_args()
 
 interrogator = AwsInterrogator()
@@ -39,6 +47,9 @@ if options.llambda:
 
 if options.role:
     interrogator.start_role(options.role)
+
+if options.stepfn:
+    interrogator.start_stepfn(options.stepfn)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)

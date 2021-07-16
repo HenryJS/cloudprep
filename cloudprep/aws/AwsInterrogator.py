@@ -4,6 +4,7 @@ from .elements.Lambda.AwsLambdaFunction import AwsLambdaFunction
 from .elements.IAM.AwsRole import AwsRole
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
+from .elements.StepFunctions.AwsStateMachine import AwsStateMachine
 from .AwsEnvironment import AwsEnvironment
 
 
@@ -35,6 +36,17 @@ class AwsInterrogator:
     def start_role(self, text_arn):
         arn = AwsARN(text_arn)
         self._environment.add_to_todo(AwsRole(self._environment, arn))
+
+    def start_stepfn(self, stepfn):
+        if stepfn is True:
+            # start with some VPCs!
+            sfn = boto3.client("stepfunctions")
+            fns = sfn.list_state_machines()
+            for FN in fns["stateMachines"]:
+                self._environment.add_to_todo(AwsStateMachine(self._environment, AwsARN(FN["stateMachineArn"])))
+        else:
+            self._environment.add_to_todo(AwsStateMachine(self._environment, AwsARN(stepfn)))
+
 
     def interrogate(self):
         more_work = True

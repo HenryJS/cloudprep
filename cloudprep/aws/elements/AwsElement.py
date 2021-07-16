@@ -26,6 +26,8 @@ class AwsElement:
 
         self._defaults = {}
 
+        self._environment.add_to_todo(self)
+
     @property
     def logical_id(self):
         return self._logical_id
@@ -111,7 +113,7 @@ class AwsElement:
 
     @staticmethod
     def calculate_logical_id(physical_id):
-        return physical_id.replace("-", "")
+        return physical_id.replace("-", "").replace("/","")
 
     def capture_method(f):
         def transformed_method(self):

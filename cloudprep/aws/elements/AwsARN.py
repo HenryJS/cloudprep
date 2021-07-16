@@ -25,8 +25,14 @@ class AwsARN:
                 self._resource_path = "/" + "/".join(resource[1:-1]) + "/"
                 self._resource_id = resource[-1]
 
+        elif len(components) == 8:
+            # This probably only applies to LowGroup ARNs?
+            # arn:aws:logs:eu-west-2:368255555983:log-group:/aws/vendedlogs/states/HelloWorld-Logs:*
+            _type, self._partition, self._service, self._region, \
+                self._account, self._resource_type, self._resource_id, self._inner_resource = components
+
         else:
-            raise Exception("Unfamiliar format:" + arn)
+            raise Exception("Unfamiliar format: {} has {} groups.".format(arn, len(components)))
 
     @property
     def text(self):
@@ -59,3 +65,7 @@ class AwsARN:
     @property
     def resource_path(self):
         return self._resource_path
+
+    @property
+    def inner_resource(self):
+        return self._inner_resource
