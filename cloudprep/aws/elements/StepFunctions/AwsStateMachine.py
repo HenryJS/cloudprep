@@ -33,7 +33,6 @@ class AwsStateMachine(AwsElement):
             source_data = self._source_data
             self._source_data = None
 
-        # TODO: Look for Lambdas and shell out
         self._element["Definition"] = json.loads(source_data["definition"])
         self.detect_lambdas(self._element["Definition"])
 
