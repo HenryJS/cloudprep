@@ -53,9 +53,10 @@ class AwsLambdaFunction(AwsElement):
 
         role = AwsRole(self._environment, AwsARN(configuration["Role"]))
         self._element["Role"] = role.make_getatt("Arn")
-        self._environment.add_to_todo(role)
 
-        self._tags.from_api_result(source_data)
+        # // TODO: This can be broken
+        if "Tags" in source_data:
+            self._tags.from_api_result(source_data)
 
         if "Concurrency" in source_data:
             self.copy_if_exists("ReservedConcurrentExecutions", source_data["Concurrency"])
@@ -63,7 +64,6 @@ class AwsLambdaFunction(AwsElement):
         # Code. This is complex.
         if source_data["Code"]["RepositoryType"] == "S3":
             self._code_s3(source_data["Code"])
-
 
         self.is_valid = True
 
