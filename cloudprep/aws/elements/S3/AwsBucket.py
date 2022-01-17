@@ -37,7 +37,6 @@ class AwsBucket(AwsElement):
         #  TODO:     "NotificationConfiguration" : NotificationConfiguration,
         #  TODO:     "OwnershipControls" : OwnershipControls,
         #  TODO:     "ReplicationConfiguration" : ReplicationConfiguration,
-        #  TODO:     "WebsiteConfiguration" : WebsiteConfiguration
         # }
 
         # The AWS S3 API is clunkier than their newer offerings.  Each property requires a separate call; if that
@@ -148,6 +147,27 @@ class AwsBucket(AwsElement):
             }
             if "MFADelete" in accc and accc["MFADelete"] == "Enabled":
                 self._environment.add_warning("MFA Delete cannot be enabled using CFN.", self.physical_id)
+
+        # Websites
+        website = self.wrap_call(s3.get_bucket_website)
+        if website:
+            website_configuration = {}
+            if "ErrorDocument" in website:
+                website_configuration["ErrorDocument"] = website["ErrorDocument"]["Key"]
+            if "IndexDocument" in website:
+                website_configuration["IndexDocument"] = website["IndexDocument"]["Suffix"]
+            if "RedirectAllRequestsTo" in website:
+                website_configuration["RedirectAllRequestsTo"] = website["RedirectAllRequestsTo"]
+            if "RoutingRules" in website:
+                rr = []
+                for rule in website["RoutingRules"]:
+                    this_rule = {
+                        "RedirectRule": rule["Redirect"]
+                    }
+                    if "Condition" in rule:
+                        this_rule["RoutingRuleCondition"] = rule["Condition"]
+                website_configuration["RoutingRules"] = rr
+            self._element["WebsiteConfiguration"] = website_configuration
 
         # Do we have a policy?
         bucket_policy = self.wrap_call(s3.get_bucket_policy)

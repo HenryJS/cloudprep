@@ -66,6 +66,7 @@
                 "s3:GetBucketPolicy",
                 "s3:GetBucketTagging",
                 "s3:ListBuckets",
+                "S3:GetBucketWebsite",
                 "states:DescribeStateMachine",
                 "states:ListTagsForResource"
               ],
