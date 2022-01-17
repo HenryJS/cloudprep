@@ -1,6 +1,4 @@
 import boto3
-import botocore.exceptions
-import sys
 from ..AwsARN import AwsARN
 from ..KMS.AwsKmsKey import AwsKmsKey
 from ..KMS.AwsKmsAlias import AwsKmsAlias
@@ -22,8 +20,7 @@ class AwsBucket(AwsElement):
             }
         })
         self._tags = TagSet({"CreatedBy": "CloudPrep"})
-        self._bucket_filter = { "Bucket": self.physical_id }
-
+        self._bucket_filter = {"Bucket": self.physical_id}
 
     @AwsElement.capture_method
     def capture(self):
@@ -55,9 +52,9 @@ class AwsBucket(AwsElement):
         if "AnalyticsConfigurationList" in analy_set:
             a_cfgs = []
             for analy_config in analy_set["AnalyticsConfigurationList"]:
-                cfg = {"Id": analy_config["Id"] }
+                cfg = {"Id": analy_config["Id"]}
 
-                if "Prefix" in analy_config :
+                if "Prefix" in analy_config:
                     cfg["Prefix"] = analy_config["Prefix"]
 
                 # Filters are moderately complicated.
@@ -79,7 +76,9 @@ class AwsBucket(AwsElement):
                     dst_arn = AwsARN(src["Bucket"])
                     dst_bucket = AwsBucket(self._environment, dst_arn.resource_id)
                     self._environment.add_to_todo(dst_bucket)
-                    dst_dx["Destination"]["BucketArn"] = {"Fn::Sub": "arn:aws:s3:::" + dst_bucket.calculate_bucket_name()}
+                    dst_dx["Destination"]["BucketArn"] = {
+                        "Fn::Sub": "arn:aws:s3:::" + dst_bucket.calculate_bucket_name()
+                    }
 
                     if "BucketAccountId" in src:
                         dst_dx["Destination"]["BucketAccountId"] = src["BucketAccountId"]
@@ -105,7 +104,7 @@ class AwsBucket(AwsElement):
                     try:
                         arn = AwsARN(kms_id)
                         kms_id = arn.resource_id
-                    except Exception as e:
+                    except Exception:
                         pass
                     key = AwsKmsKey(self._environment, kms_id, KmsAliasCreator=AwsKmsAlias)
                     self._environment.add_to_todo(key)
@@ -126,8 +125,8 @@ class AwsBucket(AwsElement):
         # Object Lock Configuration
         olc = self.wrap_call(s3.get_object_lock_configuration)
         if olc and olc["ObjectLockConfiguration"]["ObjectLockEnabled"] == "Enabled":
-                self._element["ObjectLockEnabled"] = True
-                self._element["ObjectLockConfiguration"] = olc["ObjectLockConfiguration"]
+            self._element["ObjectLockEnabled"] = True
+            self._element["ObjectLockConfiguration"] = olc["ObjectLockConfiguration"]
 
         # Public Access Block configuration
         pabc = self.wrap_call(s3.get_public_access_block)
@@ -201,7 +200,6 @@ class AwsBucket(AwsElement):
             if "Prefix" in filter["And"]:
                 target["Prefix"] = filter["And"]["Prefix"]
 
-
     def process_lifecycle_configuration(self, config):
         if config is None:
             return
@@ -239,7 +237,7 @@ class AwsBucket(AwsElement):
             if "Transitions" in rule:
                 txs = []
                 for t in rule["Transitions"]:
-                    tx = { "StorageClass": t["StorageClass"] }
+                    tx = {"StorageClass": t["StorageClass"]}
                     if "Days" in t:
                         tx["TransitionInDays"] = t["Days"]
                     if "Date" in t:
@@ -277,8 +275,8 @@ class AwsBucket(AwsElement):
 
     def wrap_call(self, call):
         try:
-            result = call(**(self._bucket_filter))
-        except Exception as e:
+            result = call(**self._bucket_filter)
+        except Exception:
             return None
         return result
 
