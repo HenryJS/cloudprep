@@ -60,6 +60,15 @@ parser.add_argument(
     default=False,
     nargs="?",
     help='Interrogate KMS Alias')
+parser.add_argument(
+    '--rest-api',
+    action='store',
+    dest='rest_api',
+    const=True,
+    default=False,
+    nargs="?",
+    help="Interrogate Rest API"
+)
 
 options = parser.parse_args()
 
@@ -84,6 +93,9 @@ if options.kms_key:
 
 if options.kms_alias:
     interrogator.start_kms_alias(options.kms_alias)
+
+if options.rest_api:
+    interrogator.start_rest_api(options.rest_api)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)

@@ -80,10 +80,11 @@ class AwsElement:
             value = self._element[key]
         return value == self._defaults[key]
 
-    def copy_if_exists(self, key, source_data):
+    def copy_if_exists(self, destination_key, source_data, source_key=None):
         """ If a key exists, copy it directly"""
-        if source_data and key in source_data:
-            self._element[key] = source_data[key]
+        source_key = destination_key if source_key is None else source_key
+        if source_data and source_key in source_data:
+            self._element[destination_key] = source_data[source_key]
 
     def refer_if_exists(self, key, source_data):
         """" If a key exists, turn it into a reference and copy it here """

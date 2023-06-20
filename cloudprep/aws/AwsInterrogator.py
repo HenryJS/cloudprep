@@ -10,6 +10,7 @@ from .elements.KMS.AwsKmsAlias import AwsKmsAlias
 from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
 from .elements.StepFunctions.AwsStateMachine import AwsStateMachine
+from .elements.ApiGateway.AwsRestApi import AwsRestApi
 from .AwsEnvironment import AwsEnvironment
 
 
@@ -73,6 +74,9 @@ class AwsInterrogator:
 
     def start_kms_alias(self, kms_alias):
         self._environment.add_to_todo(AwsKmsAlias(self._environment, kms_alias))
+
+    def start_rest_api(self, rest_api_id):
+        self._environment.add_to_todo(AwsRestApi(self._environment, rest_api_id))
 
     def interrogate(self):
         more_work = True
