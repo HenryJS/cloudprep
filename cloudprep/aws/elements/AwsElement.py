@@ -25,6 +25,9 @@ class AwsElement:
         else:
             self._source_data = None
 
+        if "parent" in kwargs:
+            self._parent = kwargs["parent"]
+
         self._defaults = {}
 
         self._environment.add_to_todo(self)
@@ -82,9 +85,24 @@ class AwsElement:
 
     def copy_if_exists(self, destination_key, source_data, source_key=None):
         """ If a key exists, copy it directly"""
+        return self.copy_if_exists_ex(self._element, destination_key, source_data, source_key)
+
+    def copy_if_exists_ex(self, destination_data, destination_key, source_data, source_key=None):
+        """ If a key exists, copy it directly"""
         source_key = destination_key if source_key is None else source_key
-        if source_data and source_key in source_data:
-            self._element[destination_key] = source_data[source_key]
+        if source_data is None:
+            return False
+
+        if source_key in source_data:
+            destination_data[destination_key] = source_data[source_key]
+            return True
+        else:
+            source_key = source_key[0].lower() + source_key[1:]
+            if source_key in source_data:
+                destination_data[destination_key] = source_data[source_key]
+                return True
+            else:
+                return False
 
     def refer_if_exists(self, key, source_data):
         """" If a key exists, turn it into a reference and copy it here """
@@ -112,8 +130,10 @@ class AwsElement:
 
         return {"Ref": logical_id}
 
-    def make_getatt(self, attribute):
-        return {"Fn::GetAtt": [self.logical_id, attribute]}
+    def make_getatt(self, attribute, subject_id=None):
+        if subject_id is None:
+            subject_id = self.logical_id
+        return {"Fn::GetAtt": [subject_id, attribute]}
 
     @staticmethod
     def calculate_logical_id(physical_id):
