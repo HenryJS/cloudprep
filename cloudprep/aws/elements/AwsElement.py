@@ -83,14 +83,12 @@ class AwsElement:
             value = self._element[key]
         return value == self._defaults[key]
 
-    def copy_if_exists(self, destination_key, source_data, source_key=None):
-        """ If a key exists, copy it directly"""
-        return self.copy_if_exists_ex(self._element, destination_key, source_data, source_key)
-
-    def copy_if_exists_ex(self, destination_data, destination_key, source_data, source_key=None):
+    def copy_if_exists(self, destination_key, source_data, source_key=None, destination_data=None):
         """ If a key exists, copy it directly"""
         source_key = destination_key if source_key is None else source_key
-        if source_data is None:
+        destination_data = self._element if destination_data is None else destination_data
+
+        if source_data is None or destination_data is None:
             return False
 
         if source_key in source_data:

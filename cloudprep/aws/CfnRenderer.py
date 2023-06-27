@@ -42,9 +42,8 @@ class CfnRenderer:
 
             tags = resource.tags
             if tags is not None:
-                r["Properties"]["Tags"] = []
-                for (key, value) in tags.items():
-                    r["Properties"]["Tags"].append({"Key": key, "Value": value})
+                tags["_cloudprep:logicalId"] = resource.logical_id
+                r["Properties"]["Tags"] =  [ {"Key": a, "Value": b} for a,b in tags.items()]
 
             response[resource.logical_id] = r
 

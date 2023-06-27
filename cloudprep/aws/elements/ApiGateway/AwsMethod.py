@@ -49,13 +49,13 @@ class AwsMethod(AwsElement):
 
             # To be valid CFN, these must also be present in RequestParameters.  As we are reading this from
             # a life environment, assume that this constraint holds true.
-            self.copy_if_exists_ex(integration, "CacheKeyParameters", i)
+            self.copy_if_exists("CacheKeyParameters", i, destination_data=integration)
             if "cacheNamespace" in i:
                 if i["cacheNamespace"] != self._resource_id:
                     integration["CacheNamespace"] = i["cacheNamespace"]
 
-            self.copy_if_exists_ex(integration, "ContentHandling", i)
-            self.copy_if_exists_ex(integration, "ConnectionType", i)
+            self.copy_if_exists("ContentHandling", i, destination_data=integration)
+            self.copy_if_exists("ConnectionType", i, destination_data=integration)
 
             if "credentials" in i:
                 if i["credentials"].startswith("arn:aws:iam"):
@@ -69,7 +69,7 @@ class AwsMethod(AwsElement):
                         self._environment.add_to_todo(role)
                         integration["Credentials"] = self.make_reference(role.logical_id)
 
-            self.copy_if_exists_ex(integration, "IntegrationHttpMethod", i, "httpMethod")
+            self.copy_if_exists("IntegrationHttpMethod", i, "httpMethod", destination_data=integration)
 
             if "integrationResponses" in i:
                 ir = []
@@ -77,8 +77,8 @@ class AwsMethod(AwsElement):
                     resp = {
                         "StatusCode": response["statusCode"]
                     }
-                    self.copy_if_exists_ex(resp, "ContentHandling", response)
-                    self.copy_if_exists_ex(resp, "SelectionPattern", response)
+                    self.copy_if_exists("ContentHandling", response, destination_data=resp)
+                    self.copy_if_exists("SelectionPattern", response, destination_data=resp)
                     if "responseModels" in response:
                         resp["ResponseModels"] = response["responseModels"].copy()
                     if "responseParameters" in response:
@@ -87,17 +87,17 @@ class AwsMethod(AwsElement):
                 integration["IntegrationResponses"] = ir
             # End Integration->IntegrationResponses
 
-            self.copy_if_exists_ex(integration, "PassThroughBehaviour", i)
-            self.copy_if_exists_ex(integration, "RequestParameters", i)
-            self.copy_if_exists_ex(integration, "RequestTemplates", i)
-            self.copy_if_exists_ex(integration, "TimeoutInMillis", i)
-            self.copy_if_exists_ex(integration, "Type", i)
+            self.copy_if_exists("PassThroughBehaviour", i, destination_data=integration)
+            self.copy_if_exists("RequestParameters", i, destination_data=integration)
+            self.copy_if_exists("RequestTemplates", i, destination_data=integration)
+            self.copy_if_exists("TimeoutInMillis", i, destination_data=integration)
+            self.copy_if_exists("Type", i, destination_data=integration)
             # TODO: Deal with this properly!
             # TODO: S3 Integration
             # TODO: API Gateway Integration
             # TODO: Lambda Integration
             # TODO: VPC_LINK NLB DNS names
-            self.copy_if_exists_ex(integration, "Uri", i)
+            self.copy_if_exists("Uri", i, destination_data=integration)
             self._element["Integration"] = integration
         # END MethodIntegration
 
