@@ -8,7 +8,7 @@ class AwsNetworkAcl(AwsElement):
     def __init__(self, environment, physical_id, vpc, **kwargs):
         super().__init__(environment, "AWS::EC2::NetworkAcl", physical_id, **kwargs)
         self.set_defaults({})
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._vpc = vpc
         self._has_associations = False
         self._rules = []

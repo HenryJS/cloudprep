@@ -9,7 +9,7 @@ class AwsInstanceRouteTarget(RouteTarget):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__("NoType", environment, physical_id, **kwargs)
         self.set_defaults({})
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @RouteTarget.capture_method
     def capture(self):

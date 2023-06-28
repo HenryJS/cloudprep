@@ -10,7 +10,7 @@ class AwsSecurityGroup(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__(environment, "AWS::EC2::SecurityGroup", physical_id, **kwargs)
         self._physical_id = physical_id
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @AwsElement.capture_method
     def capture(self):

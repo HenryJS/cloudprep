@@ -19,7 +19,7 @@ class AwsBucket(AwsElement):
                     "RestrictPublicBuckets": False
             }
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._bucket_filter = {"Bucket": self.physical_id}
 
     @AwsElement.capture_method

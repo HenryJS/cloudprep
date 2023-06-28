@@ -6,7 +6,7 @@ class SimpleElement(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__(environment, "AWS::EC2::SimpleElement", physical_id, **kwargs)
         self.set_defaults({})
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @AwsElement.capture_method
     def capture(self):

@@ -13,7 +13,7 @@ class AwsRole(AwsElement):
         super().__init__(environment, "AWS::IAM::Role", arn.resource_id, **kwargs)
 
         self._arn = arn
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
         self.set_defaults({
             "MaxSessionDuration": 3600,

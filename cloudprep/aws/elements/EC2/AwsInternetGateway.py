@@ -19,7 +19,7 @@ class AwsInternetGateway(RouteTarget):
             source_data = self._source_data
             self._source_data = None
 
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._tags.from_api_result(source_data["Tags"])
         vpc = self._route.route_table.vpc
 

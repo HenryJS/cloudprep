@@ -18,7 +18,7 @@ class AwsTransitGateway(RouteTarget):
             "VpnEcmpSupport": "enable",
             "MulticastSupport": "disable"
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @RouteTarget.capture_method
     def capture(self):

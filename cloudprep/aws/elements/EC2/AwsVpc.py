@@ -17,7 +17,7 @@ class AwsVpc(AwsElement):
             "EnableDnsSupport": True,
             "InstanceTenancy": "default"
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._main_route_table = None
         self._subnets = []
 

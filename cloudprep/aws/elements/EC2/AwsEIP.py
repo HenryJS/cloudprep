@@ -5,7 +5,7 @@ from ..TagSet import TagSet
 class AwsEIP(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__(environment, "AWS::EC2::EIP", physical_id, **kwargs)
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self.set_defaults({
             "Domain": "vpc"
         })

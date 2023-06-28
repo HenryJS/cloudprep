@@ -8,7 +8,7 @@ from .AwsRoute import AwsRoute
 class AwsRouteTable(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__(environment, "AWS::EC2::RouteTable", physical_id, **kwargs)
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._vpc = kwargs["vpc"]
         self._has_associations = False
         self._routes = []

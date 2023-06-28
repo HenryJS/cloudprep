@@ -21,7 +21,7 @@ class AwsStateMachine(AwsElement):
                 "IncludeExecutionData": False
             }
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @AwsElement.capture_method
     def capture(self):

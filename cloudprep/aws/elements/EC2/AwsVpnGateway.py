@@ -9,7 +9,7 @@ class AwsVpnGateway(RouteTarget):
     def __init__(self, environment, physical_id, **kwargs):
         super().__init__("AWS::EC2::VPNGateway", environment, physical_id, **kwargs)
         self.set_defaults({"AmazonSideAsn": 64512})
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @RouteTarget.capture_method
     def capture(self):

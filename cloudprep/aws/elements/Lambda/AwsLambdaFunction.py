@@ -20,7 +20,7 @@ class AwsLambdaFunction(AwsElement):
             "ReservedConcurrentExecutions": 1000,
             "Timeout": 3
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @AwsElement.capture_method
     def capture(self):

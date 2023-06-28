@@ -11,7 +11,7 @@ class AwsSubnet(AwsElement):
             "AssignIpv6AddressOnCreation": False,
             "MapPublicIpOnLaunch": False
         })
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
         self._route_table = None
 
     @AwsElement.capture_method

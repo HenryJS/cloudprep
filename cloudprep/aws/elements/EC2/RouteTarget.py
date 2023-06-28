@@ -9,7 +9,7 @@ class RouteTarget(AwsElement):
             raise Exception("Route not specified for RouteTarget " + physical_id)
 
         self._route = kwargs["route"]
-        self._tags = TagSet({"CreatedBy": "CloudPrep"})
+        self._tags = TagSet()
 
     @AwsElement.capture_method
     def capture(self):
