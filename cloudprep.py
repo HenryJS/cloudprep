@@ -60,7 +60,15 @@ parser.add_argument(
     default=False,
     nargs="?",
     help='Interrogate KMS Alias')
-
+parser.add_argument(
+    '--hosted-zone',
+    action='store',
+    dest='hosted_zone',
+    const=True,
+    default=False,
+    nargs="?",
+    help="Interrogate Hosted Zone"
+)
 options = parser.parse_args()
 
 interrogator = AwsInterrogator()
@@ -84,6 +92,9 @@ if options.kms_key:
 
 if options.kms_alias:
     interrogator.start_kms_alias(options.kms_alias)
+
+if options.hosted_zone:
+    interrogator.start_hosted_zone(options.hosted_zone)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)
