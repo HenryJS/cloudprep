@@ -60,6 +60,10 @@ class AwsElement:
     def dependencies(self):
         return self._dependencies
 
+    def add_dependencies(self, dependencies):
+        for dependency in dependencies:
+            self.add_dependency(dependency)
+
     def add_dependency(self, new_dependency):
         if isinstance(new_dependency, AwsElement):
             new_dependency = new_dependency.logical_id

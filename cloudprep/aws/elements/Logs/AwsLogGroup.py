@@ -1,11 +1,11 @@
 from cloudprep.aws.elements.AwsElement import AwsElement
-from cloudprep.aws.elements.TagSet import TagSet
+from ..AwsARN import AwsARN
 
 import boto3
 
 
 class AwsLogGroup(AwsElement):
-    def __init__(self, environment, arn, **kwargs):
+    def __init__(self, environment, arn: AwsARN, **kwargs):
         self._arn = arn
         super().__init__(environment, "AWS::Logs::LogGroup", arn.resource_id, **kwargs)
         self.set_defaults({})

@@ -26,3 +26,7 @@ class ArtefactRepository:
 
     def get_local_name(self, artefact):
         return os.path.join(self.__repo_path, artefact.name)
+
+    @property
+    def _local_path(self):
+        return self.__repo_path

@@ -9,13 +9,14 @@ class AwsARN:
             self._inner_resource = None
             self._format = 1
 
-        elif len(components) == 6:
+        elif len(components) == 6 or len(components) > 8:
             _type, self._partition, self._service, self._region, \
-                self._account, resource = components
+                self._account, resource = components[:6]
             self._resource_path = None
             self._resource_type = None
             self._inner_resource = None
 
+            resource = ":".join(components[5:])
             resource = resource.split("/")
             if len(resource) == 1:
                 self._resource_id = resource[0]

@@ -1,7 +1,8 @@
-import boto3
+import boto3, sys
 from cloudprep.aws.elements.AwsElement import AwsElement
 from ..IAM.AwsRole import AwsRole
 from ..AwsARN import AwsARN
+from ..Lambda.AwsLambdaFunction import AwsLambdaFunction
 
 
 class AwsMethod(AwsElement):
@@ -37,10 +38,7 @@ class AwsMethod(AwsElement):
 
         # TODO: "AuthorizerId": String, = CISTP< pr C+I+{
         self._element["HttpMethod"] = self._http_method
-        # {
-        #     TODO: "ConnectionId": String,
-        #     "IntegrationResponses": [IntegrationResponse, ...],
-        # }
+        # TODO: "ConnectionId": String,
 
         if "methodIntegration" in source_data:
             i = source_data["methodIntegration"]
@@ -97,7 +95,23 @@ class AwsMethod(AwsElement):
             # TODO: API Gateway Integration
             # TODO: Lambda Integration
             # TODO: VPC_LINK NLB DNS names
-            self.copy_if_exists("Uri", i, destination_data=integration)
+
+            if "uri" in i:
+                uri = i["uri"]
+                uri_arn = AwsARN(uri)
+                print(uri, file=sys.stderr)
+                if uri_arn.account == "lambda":
+                    lambda_arn = AwsARN(uri_arn.resource_path.split("/")[3])
+                    llambda = AwsLambdaFunction(self._environment, lambda_arn.resource_id)
+                    new_uri = {
+                        "Fn::Sub": 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/' + \
+                            '${' + llambda.logical_id + '.Arn}/invocations'
+                    }
+                    integration["Uri"] = new_uri
+                    self._environment.add_to_todo(llambda)
+
+                else:
+                    self.copy_if_exists("Uri", i, destination_data=integration)
             self._element["Integration"] = integration
         # END MethodIntegration
 

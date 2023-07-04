@@ -2,6 +2,7 @@ import boto3
 from ..AwsARN import AwsARN
 from .AwsStage import AwsStage
 from .AwsResource import AwsResource
+from .AwsUsagePlan import AwsUsagePlan
 from cloudprep.aws.elements.AwsElement import AwsElement
 from cloudprep.aws.elements.TagSet import TagSet
 
@@ -22,6 +23,7 @@ class AwsRestApi(AwsElement):
             "FailOnWarnings": False,
             "MinimumCompressionSize": 0
         })
+        self._methods = []
         self._tags = TagSet()
 
     @AwsElement.capture_method
@@ -49,7 +51,7 @@ class AwsRestApi(AwsElement):
                 raise NotImplementedError("TODO: Cannot build private API Gateways yet")
             self._element["EndpointConfiguration"] = endpoint_configuration
 
-        # "FailOnWarnings" # default to false.
+        self.copy_if_exists("FailOnWarnings", source_data)
         self.copy_if_exists("MinimumCompressionSize", source_data)
         # TODO: "Mode" : String,
         self.copy_if_exists("Name", source_data, "name")
@@ -58,24 +60,8 @@ class AwsRestApi(AwsElement):
         self._tags.from_api_result(source_data)
 
         #
-        # Capture API Stages
-        #
-        # stages = api_gateway.get_stages(restApiId=self.physical_id)
-        # n=1
-        # for stage in stages["item"]:
-        #     self._environment.add_to_todo(
-        #         AwsStage(
-        #             self._environment,
-        #             "{}Stage{}".format(self.physical_id,n),
-        #             source_data=stage,
-        #             parent=self
-        #         )
-        #     )
-
-        #
         # Capture API Resources
         #
-
         resources = api_gateway.get_resources(restApiId=self.physical_id)["items"]
 
         root_element = next(filter(lambda x: x["path"] == "/", resources), None)
@@ -94,7 +80,41 @@ class AwsRestApi(AwsElement):
                 )
             )
 
+        #
+        # Capture API Stages & Deploy them.
+        #
+        stages = api_gateway.get_stages(restApiId=self.physical_id)
+        n = 1
+        for stage in stages["item"]:
+            self._environment.add_to_todo(
+                AwsStage(
+                    self._environment,
+                    self.logical_id + "Stage" + stage["stageName"],
+                    source_data=stage,
+                    parent=self
+                )
+            )
+
+        # Capture Usage Plans
+        usage_plans = list(filter(
+            AwsRestApi.usage_plan_filter(self.physical_id),
+            api_gateway.get_usage_plans()["items"]
+        ))
+        for plan in usage_plans:
+            self._environment.add_to_todo(AwsUsagePlan(self._environment, plan["id"], source_data=plan, parent=self))
         self.is_valid = True
+
+
+    @staticmethod
+    def usage_plan_filter(target):
+        def filter_func(plan):
+            for stage in plan["apiStages"]:
+                if stage["apiId"] == target:
+                    return True
+        return filter_func
+
+    def add_method(self, method):
+        self._methods.append(method)
 
     def wrap_call(self, call):
         try:

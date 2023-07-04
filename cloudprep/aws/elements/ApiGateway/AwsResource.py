@@ -32,12 +32,14 @@ class AwsResource(AwsElement):
         #
         if "resourceMethods" in source_data:
             for method in source_data["resourceMethods"].keys():
-                self._environment.add_to_todo(AwsMethod(
+                aws_method = AwsMethod(
                     self._environment,
                     parent=self._parent,
                     resource_id=source_data["id"],
                     http_method=method
-                ))
+                )
+                self._environment.add_to_todo(aws_method)
+                self._parent.add_method(aws_method)
 
         self.is_valid = True
 

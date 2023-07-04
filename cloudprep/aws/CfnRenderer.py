@@ -16,6 +16,10 @@ class CfnRenderer:
                 "Outputs": self._environment.outputs
             }, indent=4
         ))
+        if self._environment.artefact_repository is not None:
+            with open("pre-deploy.sh", "w") as output_script:
+                output_script.write(self._environment.artefact_repository.pre_deployment_script)
+            print("Pre-Deployment script written to pre-deploy.sh", file=sys.stderr)
 
     @staticmethod
     def render_resources(resource_set):
