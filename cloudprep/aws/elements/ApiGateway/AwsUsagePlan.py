@@ -1,4 +1,6 @@
+import boto3
 from cloudprep.aws.elements.AwsElement import AwsElement
+from .AwsUsagePlanKey import AwsUsagePlanKey
 from ..TagSet import TagSet
 class AwsUsagePlan(AwsElement):
     def __init__(self, environment, physical_id, **kwargs):
@@ -49,6 +51,15 @@ class AwsUsagePlan(AwsElement):
             self._element["Throttle"] = throttle
 
         self.is_valid = True
+
+        # Get the API Keys
+        api_gateway = boto3.client("apigateway")
+        keys = api_gateway.get_usage_plan_keys(
+            usagePlanId=self.physical_id
+        )["items"]
+        for key in keys:
+            self._environment.add_to_todo(AwsUsagePlanKey(self._environment,key["id"], source_data=key, parent=self))
+
         return source_data
 
     def copy_throttle(self, source_data, dest_data) -> bool:

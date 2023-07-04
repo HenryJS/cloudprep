@@ -137,8 +137,7 @@ class AwsElement:
             subject_id = self.logical_id
         return {"Fn::GetAtt": [subject_id, attribute]}
 
-    @staticmethod
-    def calculate_logical_id(physical_id):
+    def calculate_logical_id(self, physical_id):
         return re.sub("\W", "", physical_id)
 
     def capture_method(f):

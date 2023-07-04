@@ -77,7 +77,7 @@ class AwsEnvironment:
             self.parameters[name] = kwargs
 
     def add_warning(self, message, resource_physical_id):
-        self._warnings.append("Warning: {0} on {1}".format(message, resource_physical_id))
+        self._warnings.append("Warning on {1}: {0}".format(message, resource_physical_id))
 
     def _add_artefact_repository(self):
         self.artefact_repository = AwsArtefactRepository()

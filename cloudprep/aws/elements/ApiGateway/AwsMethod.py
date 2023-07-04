@@ -99,7 +99,6 @@ class AwsMethod(AwsElement):
             if "uri" in i:
                 uri = i["uri"]
                 uri_arn = AwsARN(uri)
-                print(uri, file=sys.stderr)
                 if uri_arn.account == "lambda":
                     lambda_arn = AwsARN(uri_arn.resource_path.split("/")[3])
                     llambda = AwsLambdaFunction(self._environment, lambda_arn.resource_id)
