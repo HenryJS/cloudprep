@@ -69,6 +69,15 @@ parser.add_argument(
     nargs="?",
     help="Interrogate Rest API"
 )
+parser.add_argument(
+    '--hosted-zone',
+    action='store',
+    dest='hosted_zone',
+    const=True,
+    default=False,
+    nargs="?",
+    help="Interrogate Hosted Zone"
+)
 
 options = parser.parse_args()
 
@@ -96,6 +105,9 @@ if options.kms_alias:
 
 if options.rest_api:
     interrogator.start_rest_api(options.rest_api)
+
+if options.hosted_zone:
+    interrogator.start_hosted_zone(options.hosted_zone)
 
 environment = interrogator.interrogate()
 renderer = CfnRenderer(environment)

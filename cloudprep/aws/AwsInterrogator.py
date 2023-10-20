@@ -11,6 +11,7 @@ from .elements.AwsARN import AwsARN
 from .elements.ArnToElement import element_from_arn
 from .elements.StepFunctions.AwsStateMachine import AwsStateMachine
 from .elements.ApiGateway.AwsRestApi import AwsRestApi
+from .elements.Route53.AwsHostedZone import AwsHostedZone
 from .AwsEnvironment import AwsEnvironment
 
 
@@ -77,6 +78,9 @@ class AwsInterrogator:
 
     def start_rest_api(self, rest_api_id):
         self._environment.add_to_todo(AwsRestApi(self._environment, rest_api_id))
+
+    def start_hosted_zone(self, hosted_zone):
+        self._environment.add_to_todo(AwsHostedZone(self._environment, hosted_zone))
 
     def interrogate(self):
         more_work = True
